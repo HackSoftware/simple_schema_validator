@@ -1,3 +1,12 @@
+def add_to_missing_keys(missing_keys, key, given_key=None):
+    missing_key = key
+    if given_key:
+        missing_key = f'{given_key}.{key}'
+
+    missing_keys.append(missing_key)
+    return missing_keys
+
+
 def schema_validator(schema, data, missing_keys=None, additional_keys=None, given_key=None):
     used_keys = set()
     all_keys = set(data.keys())
@@ -21,21 +30,12 @@ def schema_validator(schema, data, missing_keys=None, additional_keys=None, give
                     given_key=key
                 )
             else:
-                missing_key = key
-                if given_key:
-                    missing_key = f'{given_key}.{key}'
-
-                missing_keys.append(missing_key)
-
+                missing_keys = add_to_missing_keys(missing_keys, key, given_key)
         else:
             used_keys.add(element)
 
             if element not in data:
-                missing_key = element
-                if given_key:
-                    missing_key = f'{given_key}.{element}'
-
-                missing_keys.append(missing_key)
+                missing_keys = add_to_missing_keys(missing_keys, element, given_key)
 
     additional_keys += [x for x in all_keys if x not in used_keys]
 
