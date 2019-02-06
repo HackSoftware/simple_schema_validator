@@ -1,4 +1,4 @@
-def schema_validator(schema, data, missing_keys=None, additional_keys=None):
+def schema_validator(schema, data, missing_keys=None, additional_keys=None, given_key=None):
     used_keys = set()
     all_keys = set(data.keys())
 
@@ -12,22 +12,30 @@ def schema_validator(schema, data, missing_keys=None, additional_keys=None):
         if type(element) is list:
             key, nested_schema = element
             used_keys.add(key)
-
             if key in data:
                 missing_keys, additional_keys = schema_validator(
                     nested_schema,
                     data[key],
                     missing_keys,
-                    additional_keys
+                    additional_keys,
+                    given_key=key
                 )
             else:
-                missing_keys.append(key)
+                missing_key = key
+                if given_key:
+                    missing_key = f'{given_key}.{key}'
+
+                missing_keys.append(missing_key)
 
         else:
             used_keys.add(element)
 
             if element not in data:
-                missing_keys.append(element)
+                missing_key = element
+                if given_key:
+                    missing_key = f'{given_key}.{element}'
+
+                missing_keys.append(missing_key)
 
     additional_keys += [x for x in all_keys if x not in used_keys]
 
@@ -38,13 +46,20 @@ if __name__ == '__main__':
     schema = [
         'a',
         'b',
-        'c'
+        [
+            'c',
+            [['d', ['e']]]
+        ]
     ]
+
     data = {
-        'a': 1,
-        'b': 2,
-        'c': 3,
-        'd': 4
-    }
+            'a': 1,
+            'b': 2,
+            'c': {
+                'd': {
+                    'f': 3
+                }
+            }
+        }
 
     print(schema_validator(schema, data))

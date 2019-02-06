@@ -73,7 +73,7 @@ class SchemaValidatorTests(TestCase):
             'h': 10
         }
 
-        expected_data_with_less_keys = (['f'], [])
+        expected_data_with_less_keys = (['c.f'], [])
         expected_data_with_more_keys = ([], ['h'])
 
         with self.subTest('Test valid data is valid'):
@@ -114,7 +114,7 @@ class SchemaValidatorTests(TestCase):
             }
         }
 
-        expected_invalid_data = (['e'], ['f'])
+        expected_invalid_data = (['d.e'], ['f'])
 
         with self.subTest('Test valid data is valid'):
             self.assertEqual(schema_validator(schema, valid_data), ([], []))
