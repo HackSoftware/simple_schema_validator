@@ -114,7 +114,7 @@ class SchemaValidatorTests(TestCase):
             }
         }
 
-        expected_invalid_data = (['d.e'], ['f'])
+        expected_invalid_data = (['c.d.e'], ['f'])
 
         with self.subTest('Test valid data is valid'):
             self.assertEqual(schema_validator(schema, valid_data), ([], []))
@@ -122,4 +122,47 @@ class SchemaValidatorTests(TestCase):
         with self.subTest('Test invalid data invalid'):
             self.assertEqual(schema_validator(schema, invalid_data), expected_invalid_data)
 
+    def test_validation_multiple_level_nested_schema(self):
+        schema = [
+            'a',
+            'b',
+            [
+                'c',
+                [['d', [['e', ['g', 'h']]]]]
+            ],
+            'r'
+        ]
 
+        valid_data = {
+            'a': 1,
+            'b': 2,
+            'c': {
+                'd': {
+                    'e': {
+                        'g': 2,
+                        'h': 3
+                    }
+                }
+            },
+            'r': 23,
+        }
+        invalid_data = {
+            'a': 1,
+            'b': 2,
+            'c': {
+                'd': {
+                    'f': 12,
+                    'e': {
+                        'h': 3
+                    }
+                }
+            },
+        }
+
+        expected_invalid_data = (['c.d.e.g', 'r'], ['f'])
+
+        with self.subTest('Test valid data is valid'):
+            self.assertEqual(schema_validator(schema, valid_data), ([], []))
+
+        with self.subTest('Test invalid data invalid'):
+            self.assertEqual(schema_validator(schema, invalid_data), expected_invalid_data)
