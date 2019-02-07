@@ -1,9 +1,8 @@
-from unittest import TestCase
-
+import unittest
 from schema_validator import schema_validator
 
 
-class SchemaValidatorTests(TestCase):
+class SchemaValidatorTests(unittest.TestCase):
     def test_validating_plain_schema(self):
         schema = [
             'a',
@@ -25,11 +24,11 @@ class SchemaValidatorTests(TestCase):
             'c': 3,
             'd': 4
         }
-        expected_data_with_less_keys = (['c'], [])
-        expected_data_with_more_keys = ([], ['d'])
+        expected_data_with_less_keys = (False, ['c'], [])
+        expected_data_with_more_keys = (False, [], ['d'])
 
         with self.subTest('Test valid data is valid'):
-            self.assertEqual(schema_validator(schema, valid_data), ([], []))
+            self.assertEqual(schema_validator(schema, valid_data), (True, [], []))
 
         with self.subTest('Test invalid data with less keys'):
             self.assertEqual(schema_validator(schema, invalid_data_with_less_keys), expected_data_with_less_keys)
@@ -73,11 +72,11 @@ class SchemaValidatorTests(TestCase):
             'h': 10
         }
 
-        expected_data_with_less_keys = (['c.f'], [])
-        expected_data_with_more_keys = ([], ['h'])
+        expected_data_with_less_keys = (False, ['c.f'], [])
+        expected_data_with_more_keys = (False, [], ['h'])
 
         with self.subTest('Test valid data is valid'):
-            self.assertEqual(schema_validator(schema, valid_data), ([], []))
+            self.assertEqual(schema_validator(schema, valid_data), (True, [], []))
 
         with self.subTest('Test invalid data with less keys'):
             self.assertEqual(schema_validator(schema, invalid_data_with_less_keys), expected_data_with_less_keys)
@@ -91,7 +90,11 @@ class SchemaValidatorTests(TestCase):
             'b',
             [
                 'c',
-                [['d', ['e']]]
+                [
+                    [
+                        'd', ['e']
+                    ]
+                ]
             ]
         ]
 
@@ -114,10 +117,10 @@ class SchemaValidatorTests(TestCase):
             }
         }
 
-        expected_invalid_data = (['c.d.e'], ['f'])
+        expected_invalid_data = (False, ['c.d.e'], ['c.d.f'])
 
         with self.subTest('Test valid data is valid'):
-            self.assertEqual(schema_validator(schema, valid_data), ([], []))
+            self.assertEqual(schema_validator(schema, valid_data), (True, [], []))
 
         with self.subTest('Test invalid data invalid'):
             self.assertEqual(schema_validator(schema, invalid_data), expected_invalid_data)
@@ -128,7 +131,16 @@ class SchemaValidatorTests(TestCase):
             'b',
             [
                 'c',
-                [['d', [['e', ['g', 'h']]]]]
+                [
+                    [
+                        'd',
+                        [
+                            [
+                                'e', ['g', 'h']
+                            ]
+                        ]
+                    ]
+                ]
             ],
             'r'
         ]
@@ -153,16 +165,22 @@ class SchemaValidatorTests(TestCase):
                 'd': {
                     'f': 12,
                     'e': {
-                        'h': 3
+                        'h': 3,
+                        's': 2
                     }
                 }
             },
+            't': 2
         }
 
-        expected_invalid_data = (['c.d.e.g', 'r'], ['f'])
+        expected_invalid_data = (False, ['c.d.e.g', 'r'], ['c.d.e.s', 'c.d.f',  't'])
 
         with self.subTest('Test valid data is valid'):
-            self.assertEqual(schema_validator(schema, valid_data), ([], []))
+            self.assertEqual(schema_validator(schema, valid_data), (True, [], []))
 
         with self.subTest('Test invalid data invalid'):
             self.assertEqual(schema_validator(schema, invalid_data), expected_invalid_data)
+
+
+if __name__ == '__main__':
+    unittest.main()
