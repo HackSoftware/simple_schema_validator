@@ -10,7 +10,6 @@ class SchemaValidatorTests(unittest.TestCase):
             'c': None
         }
 
-
         with self.subTest('Test with valid data.'):
             data = {
                 'a': 1,
@@ -137,7 +136,6 @@ class SchemaValidatorTests(unittest.TestCase):
             },
             'r': None,
         }
-
 
         with self.subTest('Test with valid data.'):
             data = {
