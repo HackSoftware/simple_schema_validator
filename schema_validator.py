@@ -1,19 +1,36 @@
+from typing import Tuple, List, Dict, Any, Union, Deque, Optional
+
 from collections import deque
 
 
-def build_path(item, parents):
-    path = deque()
+MissingKeys = List[str]
+AdditionalKeys = List[str]
+Schema = Dict[str, Any]
+Data = Dict[str, Any]
+
+Paths = Dict[str, Optional[str]]  # item: parent
+
+
+def build_path(item: str, parents: Paths) -> str:
+    path: Deque[str] = deque()
     path.appendleft(item)
 
     while parents[item] is not None:
-        path.appendleft(parents[item])
+        path.appendleft(parents[item])  # type: ignore
 
-        item = parents[item]
+        item = parents[item]  # type: ignore
 
     return '.'.join(path)
 
 
-def get_nested(d, path):
+def build_paths(paths: Paths) -> List[str]:
+    return [
+        build_path(item, paths)
+        for item in paths
+    ]
+
+
+def get_nested(d: Data, path: str) -> Any:
     parts = path.split('.')
 
     result = None
@@ -29,8 +46,8 @@ def get_nested(d, path):
     return result
 
 
-def get_paths(d):
-    stack = deque()
+def get_paths(d: Union[Data, Schema]) -> Paths:
+    stack: Deque[Tuple[str, Optional[str]]] = deque()
     parents = {}  # item: parent, top-level items have None as parent
 
     for key in d:
@@ -52,14 +69,7 @@ def get_paths(d):
     return parents
 
 
-def build_paths(paths):
-    return [
-        build_path(item, paths)
-        for item in paths
-    ]
-
-
-def schema_validator(schema, data):
+def schema_validator(schema: Schema, data: Data) -> Tuple[bool, MissingKeys, AdditionalKeys]:
     schema_paths = set(build_paths(get_paths(schema)))
     data_paths = set(build_paths(get_paths(data)))
 
