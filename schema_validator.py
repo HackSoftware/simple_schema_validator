@@ -1,19 +1,19 @@
 from collections import deque
 
 
-def _build_path(item, parents):
+def build_path(item, parents):
     path = deque()
     path.appendleft(item)
 
     while parents[item] is not None:
-        path.appendleft(parents[item])  # [b, ]
+        path.appendleft(parents[item])
 
         item = parents[item]
 
     return '.'.join(path)
 
 
-def _get_nested(d, path):
+def get_nested(d, path):
     parts = path.split('.')
 
     result = None
@@ -29,7 +29,7 @@ def _get_nested(d, path):
     return result
 
 
-def _get_paths(d):
+def get_paths(d):
     stack = deque()
     parents = {}  # item: parent, top-level items have None as parent
 
@@ -42,7 +42,7 @@ def _get_paths(d):
 
         parents[item] = parent
 
-        value = _get_nested(d, _build_path(item, parents))
+        value = get_nested(d, build_path(item, parents))
 
         if type(value) is dict:
             for key in value:
@@ -52,93 +52,18 @@ def _get_paths(d):
     return parents
 
 
-def _add_to_keys(keys, key, key_depth=None):
-    missing_key = key
-    if key_depth:
-        missing_key = f'{".".join(key_depth)}.{key}'
-
-    keys.append(missing_key)
-    return keys
+def build_paths(paths):
+    return [
+        build_path(item, paths)
+        for item in paths
+    ]
 
 
 def schema_validator(schema, data):
-    parents = _get_paths(data)
+    schema_paths = set(build_paths(get_paths(schema)))
+    data_paths = set(build_paths(get_paths(data)))
 
-    def internal(schema, data, missing_keys=None, additional_keys=None, key_depth=None):
-        used_keys = set()
-        all_keys = set(data.keys())
+    missing_keys = schema_paths - data_paths
+    additional_keys = data_paths - schema_paths
 
-        if missing_keys is None:
-            missing_keys = []
-
-        if additional_keys is None:
-            additional_keys = []
-
-        if key_depth is None:
-            key_depth = []
-
-        for element in schema:
-            if type(element) is list:
-                key, nested_schema = element
-                used_keys.add(key)
-
-                if key in data:
-                    key_depth.append(key)
-
-                    valid, missing_keys, additional_keys = internal(
-                        nested_schema,
-                        data[key],
-                        missing_keys,
-                        additional_keys,
-                        key_depth=key_depth
-                    )
-
-                    key_depth.clear()
-                else:
-                    missing_keys = _add_to_keys(missing_keys, key, key_depth)
-            else:
-                used_keys.add(element)
-
-                if element not in data:
-                    missing_keys = _add_to_keys(missing_keys, element, key_depth)
-
-        additional_keys += [_build_path(x, parents) for x in all_keys if x not in used_keys]
-
-        return additional_keys == [] and missing_keys == [], missing_keys, additional_keys
-
-    return internal(schema, data)
-
-
-if __name__ == '__main__':
-    schema = [
-        'a',
-        'b',
-        [
-            'c',
-            [['d', [['e', ['g', 'h']]]]]
-        ],
-        'r',
-        [
-            'l', ['a', 'b']
-        ]
-    ]
-
-    data = {
-            'a': 1,
-            'b': 2,
-            'c': {
-                'd': {
-                    'f': 3,
-                    'e': {
-                        'g': 2,
-                        'i': 23
-                    }
-                }
-            },
-            'l': {
-                'a': 2,
-                'h': 34
-            }
-        }
-
-    print(schema_validator(schema, data))
+    return schema_paths == data_paths, missing_keys, additional_keys
