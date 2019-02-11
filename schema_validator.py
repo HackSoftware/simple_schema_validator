@@ -66,4 +66,4 @@ def schema_validator(schema, data):
     missing_keys = schema_paths - data_paths
     additional_keys = data_paths - schema_paths
 
-    return schema_paths == data_paths, missing_keys, additional_keys
+    return schema_paths == data_paths, sorted(missing_keys), sorted(additional_keys)
