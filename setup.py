@@ -7,7 +7,7 @@ from setuptools import find_packages, setup, Command
 
 # Package meta-data.
 NAME = 'simple_schema_validator'
-DESCRIPTION = 'A dead-simple utility to validate that objects have a certain structure.'
+DESCRIPTION = 'A dead-simple utility that validates if object has a certain structure.'
 URL = 'https://github.com/HackSoftware/simple_schema_validator'
 EMAIL = 'radorado@hacksoft.io'
 AUTHOR = 'Radoslav Georgiev'
