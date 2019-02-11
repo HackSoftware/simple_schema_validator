@@ -11,7 +11,7 @@ class SchemaValidatorTests(unittest.TestCase):
         }
 
 
-        with self.subTest('Test valid data is valid'):
+        with self.subTest('Test with valid data.'):
             data = {
                 'a': 1,
                 'b': 2,
@@ -24,29 +24,17 @@ class SchemaValidatorTests(unittest.TestCase):
             self.assertEqual([], missing_keys)
             self.assertEqual([], additional_keys)
 
-        with self.subTest('Test invalid data with less keys'):
+        with self.subTest('Test with invalid data with missing & additional keys.'):
             data = {
                 'a': 1,
-                'b': 2
+                'b': 2,
+                'd': 4
             }
 
             value, missing_keys, additional_keys = schema_validator(schema, data)
 
             self.assertEqual(False, value)
             self.assertEqual(['c'], missing_keys)
-            self.assertEqual([], additional_keys)
-
-        with self.subTest('Test invalid data with more keys'):
-            data = {
-                'a': 1,
-                'b': 2,
-                'c': 3,
-                'd': 4
-            }
-            value, missing_keys, additional_keys = schema_validator(schema, data)
-
-            self.assertEqual(False, value)
-            self.assertEqual([], missing_keys)
             self.assertEqual(['d'], additional_keys)
 
     def test_validating_one_level_nested_schema(self):
@@ -59,7 +47,7 @@ class SchemaValidatorTests(unittest.TestCase):
             }
         }
 
-        with self.subTest('Test valid data is valid'):
+        with self.subTest('Test with valid data.'):
             data = {
                 'a': 1,
                 'b': 2,
@@ -74,28 +62,12 @@ class SchemaValidatorTests(unittest.TestCase):
             self.assertEqual([], missing_keys)
             self.assertEqual([], additional_keys)
 
-        with self.subTest('Test invalid data with less keys'):
+        with self.subTest('Test with invalid data with missing & additional keys.'):
             data = {
                 'a': 1,
                 'b': 2,
                 'c': {
                     'd': 3
-                }
-            }
-
-            value, missing_keys, additional_keys = schema_validator(schema, data)
-
-            self.assertEqual(False, value)
-            self.assertEqual(['c.f'], missing_keys)
-            self.assertEqual([], additional_keys)
-
-        with self.subTest('Test invalid data with more keys'):
-            data = {
-                'a': 1,
-                'b': 2,
-                'c': {
-                    'd': 3,
-                    'f': 4
                 },
                 'h': 10
             }
@@ -103,7 +75,7 @@ class SchemaValidatorTests(unittest.TestCase):
             value, missing_keys, additional_keys = schema_validator(schema, data)
 
             self.assertEqual(False, value)
-            self.assertEqual([], missing_keys)
+            self.assertEqual(['c.f'], missing_keys)
             self.assertEqual(['h'], additional_keys)
 
     def test_validating_two_level_nested_schema(self):
@@ -117,10 +89,7 @@ class SchemaValidatorTests(unittest.TestCase):
             }
         }
 
-
-        expected_invalid_data = (False, set(['c.d.e']), set(['c.d.f']))
-
-        with self.subTest('Test valid data is valid'):
+        with self.subTest('Test with valid data.'):
             data = {
                 'a': 1,
                 'b': 2,
@@ -137,7 +106,7 @@ class SchemaValidatorTests(unittest.TestCase):
             self.assertEqual([], missing_keys)
             self.assertEqual([], additional_keys)
 
-        with self.subTest('Test invalid data invalid'):
+        with self.subTest('Test with invalid data with missing & additional keys.'):
             data = {
                 'a': 1,
                 'b': 2,
@@ -170,7 +139,7 @@ class SchemaValidatorTests(unittest.TestCase):
         }
 
 
-        with self.subTest('Test valid data is valid'):
+        with self.subTest('Test with valid data.'):
             data = {
                 'a': 1,
                 'b': 2,
@@ -191,7 +160,7 @@ class SchemaValidatorTests(unittest.TestCase):
             self.assertEqual([], missing_keys)
             self.assertEqual([], additional_keys)
 
-        with self.subTest('Test invalid data invalid'):
+        with self.subTest('Test with invalid data with missing & additional keys.'):
             data = {
                 'a': 1,
                 'b': 2,
