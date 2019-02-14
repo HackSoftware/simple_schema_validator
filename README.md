@@ -36,16 +36,16 @@ from simple_schema_validator import schema_validator
 data = get_data_from_api()
 
 schema = {
-  'user': None,
+  'user': Any,
   'profile': {
-    'email': None,
-    'name': None,
-    'age': None
+    'email': Any,
+    'name': Any,
+    'age': Any
   },
   'tokens': {
-    'jwt': None,
-    'refresh': None,
-    'firebase': None
+    'jwt': Any,
+    'refresh': Any,
+    'firebase': Any
   }
 }
 
