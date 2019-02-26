@@ -1,13 +1,16 @@
 import unittest
+
+from typing import Any
+
 from schema_validator import schema_validator
 
 
 class SchemaValidatorTests(unittest.TestCase):
     def test_validating_plain_schema(self):
         schema = {
-            'a': None,
-            'b': None,
-            'c': None
+            'a': Any,
+            'b': Any,
+            'c': Any
         }
 
         with self.subTest('Test with valid data.'):
@@ -38,11 +41,11 @@ class SchemaValidatorTests(unittest.TestCase):
 
     def test_validating_one_level_nested_schema(self):
         schema = {
-            'a': None,
-            'b': None,
+            'a': Any,
+            'b': Any,
             'c': {
-                'd': None,
-                'f': None
+                'd': Any,
+                'f': Any
             }
         }
 
@@ -79,11 +82,11 @@ class SchemaValidatorTests(unittest.TestCase):
 
     def test_validating_two_level_nested_schema(self):
         schema = {
-            'a': None,
-            'b': None,
+            'a': Any,
+            'b': Any,
             'c': {
                 'd': {
-                    'e': None
+                    'e': Any
                 }
             }
         }
@@ -124,17 +127,17 @@ class SchemaValidatorTests(unittest.TestCase):
 
     def test_validation_multiple_level_nested_schema(self):
         schema = {
-            'a': None,
-            'b': None,
+            'a': Any,
+            'b': Any,
             'c': {
                 'd': {
                     'e': {
-                        'g': None,
-                        'h': None
+                        'g': Any,
+                        'h': Any
                     }
                 }
             },
-            'r': None,
+            'r': Any,
         }
 
         with self.subTest('Test with valid data.'):
