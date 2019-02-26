@@ -49,9 +49,10 @@ schema = {
   }
 }
 
-valid, missing_keys, additional_keys = schema_validator(schema, data)
+result = schema_validator(schema, data)
 
-assert valid, f'Response not valid, missing: {missing_keys}, additional: {additional_keys}'
+if not result:
+    print(f'Schema not valid. Missing: {result.missing_keys}, additional: {result.additional_keys}')
 ```
 
 * `missing_keys` are those keys that are required in the `schema`, but not found in `data`.

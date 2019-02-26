@@ -69,11 +69,39 @@ def get_paths(d: Union[Data, Schema]) -> Paths:
     return parents
 
 
-def schema_validator(schema: Schema, data: Data) -> Tuple[bool, MissingKeys, AdditionalKeys]:
+class SchemaValidationResult:
+    def __init__(self, *, valid, missing_keys, additional_keys, type_errors):
+        self.__valid = valid
+        self.__missing_keys = missing_keys
+        self.__additional_keys = additional_keys
+        self.__type_errors = type_errors
+
+    @property
+    def missing_keys(self):
+        return self.__missing_keys
+
+    @property
+    def additional_keys(self):
+        return self.__additional_keys
+
+    @property
+    def type_errors(self):
+        return self.__type_errors
+
+    def __bool__(self):
+        return self.__valid
+
+
+def schema_validator(schema: Schema, data: Data) -> SchemaValidationResult:
     schema_paths = set(build_paths(get_paths(schema)))
     data_paths = set(build_paths(get_paths(data)))
 
     missing_keys = schema_paths - data_paths
     additional_keys = data_paths - schema_paths
 
-    return schema_paths == data_paths, sorted(missing_keys), sorted(additional_keys)
+    return SchemaValidationResult(
+        valid=schema_paths == data_paths,
+        missing_keys=sorted(missing_keys),
+        additional_keys=sorted(additional_keys),
+        type_errors=[]
+    )
