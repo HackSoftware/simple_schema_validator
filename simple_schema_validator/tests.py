@@ -489,9 +489,9 @@ class SchemaValidatorTests(unittest.TestCase):
 
     def test_validating_optional_schema(self):
         schema = {
-            'foo': types.Optional[types.Schema({
+            'foo': types.Optional[{
                 'bar': int
-            })]
+            }]
         }
 
         with self.subTest('None is valid for optional'):

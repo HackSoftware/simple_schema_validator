@@ -66,8 +66,7 @@ def get_paths(d: Union[Data, Schema]) -> Paths:
         value = get_nested(d, path)
 
         if is_optional_schema(value):
-            schema_type = get_optional_type(value)
-            value = schema_type.schema
+            value = get_optional_type(value)
 
             d[path] = value
 
@@ -107,17 +106,11 @@ def get_optional_type(t: OptionalType) -> Any:
 
 
 def is_optional_schema(v: Any) -> bool:
-    return is_optional(v) and isinstance(get_optional_type(v), SchemaType)
-
-
-class SchemaType:
-    def __init__(self, schema):
-        self.schema = schema
+    return is_optional(v) and isinstance(get_optional_type(v), Mapping)
 
 
 class types:
     Optional = OptionalTypeFactory()
-    Schema = SchemaType
 
 
 def type_check(schema, data, path, optional_paths) -> Tuple[bool, Optional[Dict[str, Any]]]:
@@ -210,9 +203,6 @@ def schema_validator(schema: Schema, data: Data) -> SchemaValidationResult:
     additional_keys = data_paths - schema_paths
 
     existing_paths_in_schema = data_paths - additional_keys
-
-    if optional_paths:
-        print(optional_paths)
 
     type_errors = []
 
