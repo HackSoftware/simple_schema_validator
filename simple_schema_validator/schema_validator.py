@@ -106,9 +106,11 @@ def schema_validator(schema: Schema, data: Data) -> SchemaValidationResult:
     missing_keys = schema_paths - data_paths
     additional_keys = data_paths - schema_paths
 
+    existing_paths_in_schema = data_paths - additional_keys
+
     correct_types = True
 
-    for path in data_paths:
+    for path in existing_paths_in_schema:
         _type = get_nested(schema, path)
         value = get_nested(data, path)
 
