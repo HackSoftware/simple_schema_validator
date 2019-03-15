@@ -183,14 +183,14 @@ class SchemaValidatorTests(unittest.TestCase):
             self.assertEqual(['c.d.e.g', 'r'], result.missing_keys)
             self.assertEqual(['c.d.e.s', 'c.d.f', 't'], result.additional_keys)
 
-    def test_validating_types(self):
+    def test_validating_types_with_plain_schema(self):
         with self.subTest('Valid schema, invalid types'):
             schema = {
                 'a': int,
             }
 
             data = {
-                'a': 'some-_string'
+                'a': 'some_string'
             }
 
             result = schema_validator(schema, data)
@@ -217,6 +217,67 @@ class SchemaValidatorTests(unittest.TestCase):
             self.assertEqual(True, bool(result))
             self.assertEqual([], result.missing_keys)
             self.assertEqual([], result.additional_keys)
+
+        with self.subTest('Invalid schema, invalid types'):
+            schema = {
+                'a': int,
+                'b': str
+            }
+
+            data = {
+                'a': 'some_string',
+                'c': 1
+            }
+
+            result = schema_validator(schema, data)
+
+            self.assertEqual(False, bool(result))
+            self.assertEqual(['b'], result.missing_keys)
+            self.assertEqual(['c'], result.additional_keys)
+            self.assertEqual(
+                [{'path': 'a', 'expected': int, 'actual': str}],
+                result.type_errors
+            )
+
+        with self.subTest('Invalid schema, valid types'):
+            schema = {
+                'a': int,
+                'b': str
+            }
+
+            data = {
+                'a': 1,
+                'c': 1
+            }
+
+            result = schema_validator(schema, data)
+
+            self.assertEqual(False, bool(result))
+            self.assertEqual(['b'], result.missing_keys)
+            self.assertEqual(['c'], result.additional_keys)
+            self.assertEqual([], result.type_errors)
+
+    def test_validating_different_types(self):
+        schema = {
+            'a': int,
+            'b': str,
+            'c': float,
+            'd': bool,
+        }
+
+        data = {
+            'a': 1,
+            'b': 'some_string',
+            'c': 1.0,
+            'd': True,
+        }
+
+        result = schema_validator(schema, data)
+
+        self.assertEqual(True, bool(result))
+        self.assertEqual([], result.missing_keys)
+        self.assertEqual([], result.additional_keys)
+        self.assertEqual([], result.type_errors)
 
 
 if __name__ == '__main__':
