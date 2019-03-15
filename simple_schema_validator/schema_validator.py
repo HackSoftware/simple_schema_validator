@@ -71,6 +71,10 @@ def get_paths(d: Union[Data, Schema]) -> Paths:
     return parents
 
 
+class types:
+    pass
+
+
 def type_check(schema, data, path) -> Tuple[bool, Optional[Dict[str, Any]]]:
     _type = get_nested(schema, path)
     value = get_nested(data, path)
@@ -81,12 +85,23 @@ def type_check(schema, data, path) -> Tuple[bool, Optional[Dict[str, Any]]]:
     if _type is Any:
         return True, None
 
+    if _type is None:
+        if value is None:
+            return True, None
+
+        return False, {'path': path, 'expected': None, 'actual': type(value)}
+
     value_type = type(value)
 
     if value_type is _type:
         return True, None
 
-    return False, {'path': path, 'expected': _type, 'actual': type(value)}
+    actual: Any = type(value)
+
+    if value is None:
+        actual = None
+
+    return False, {'path': path, 'expected': _type, 'actual': actual}
 
 
 class SchemaValidationResult:

@@ -258,26 +258,62 @@ class SchemaValidatorTests(unittest.TestCase):
             self.assertEqual([], result.type_errors)
 
     def test_validating_different_types(self):
-        schema = {
-            'a': int,
-            'b': str,
-            'c': float,
-            'd': bool,
-        }
+        with self.subTest('Valid types'):
+            schema = {
+                'a': int,
+                'b': str,
+                'c': float,
+                'd': bool,
+                'e': None
+            }
 
-        data = {
-            'a': 1,
-            'b': 'some_string',
-            'c': 1.0,
-            'd': True,
-        }
+            data = {
+                'a': 1,
+                'b': 'some_string',
+                'c': 1.0,
+                'd': True,
+                'e': None
+            }
 
-        result = schema_validator(schema, data)
+            result = schema_validator(schema, data)
 
-        self.assertEqual(True, bool(result))
-        self.assertEqual([], result.missing_keys)
-        self.assertEqual([], result.additional_keys)
-        self.assertEqual([], result.type_errors)
+            self.assertEqual(True, bool(result))
+            self.assertEqual([], result.missing_keys)
+            self.assertEqual([], result.additional_keys)
+            self.assertEqual([], result.type_errors)
+
+        with self.subTest('Invalid types'):
+            schema = {
+                'a': int,
+                'b': str,
+                'c': float,
+                'd': bool,
+                'e': None
+            }
+
+            data = {
+                'a': 'some_string',
+                'b': 1.0,
+                'c': 1,
+                'd': None,
+                'e': 'some_string'
+            }
+
+            result = schema_validator(schema, data)
+
+            self.assertEqual(False, bool(result))
+            self.assertEqual([], result.missing_keys)
+            self.assertEqual([], result.additional_keys)
+            self.assertEqual(
+                [
+                    {'actual': str, 'expected': int, 'path': 'a'},
+                    {'actual': float, 'expected': str, 'path': 'b'},
+                    {'actual': int, 'expected': float, 'path': 'c'},
+                    {'actual': None, 'expected': bool, 'path': 'd'},
+                    {'actual': str, 'expected': None, 'path': 'e'}
+                ],
+                result.type_errors
+            )
 
     def test_validating_types_with_nested_schema(self):
         with self.subTest('Valid schema, invalid types'):
