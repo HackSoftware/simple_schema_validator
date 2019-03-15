@@ -91,7 +91,7 @@ Here's an example:
 
 
 ```python
-from simple_schema_validator import schema_validator
+from simple_schema_validator import schema_validator, types
 
 
 schema = {
@@ -128,4 +128,71 @@ result = schema_validator(schema, data)
 
 assert bool(result) is False
 assert result.type_errors == [{'path': 'profile.age', 'expected': int, 'actual': str}]
+```
+
+### Optional types
+
+The schema validator support optional types.
+
+You can do the following:
+
+```python
+from simple_schema_validator import schema_validator, types
+
+schema = {
+  'a': types.Optional[int]
+}
+
+data_1 = {
+  'a': None
+}
+
+data_2 = {
+  'a': 1
+}
+
+data_3 = {
+  'a': 'some_string'
+}
+
+assert bool(schema_validator(schema, data_1)) is True
+assert bool(schema_validator(schema, data_2)) is True
+assert bool(schema_validator(schema, data_3)) is False
+```
+
+Additionally, you can define optional branches in the schema:
+
+```python
+from simple_schema_validator import schema_validator, types
+
+schema = {
+  'a': types.Optional[{
+    'b': int
+  }]
+}
+
+data_1 = {
+  'a': None
+}
+
+data_2 = {
+  'a': 1
+}
+
+data_3 = {
+  'a': {
+    'b': 1
+  }
+}
+
+data_4 = {
+  'a': {
+    'b': 'some_string'
+  }
+}
+
+assert bool(schema_validator(schema, data_1)) is True
+assert bool(schema_validator(schema, data_2)) is False
+assert bool(schema_validator(schema, data_3)) is True
+assert bool(schema_validator(schema, data_4)) is False
 ```
