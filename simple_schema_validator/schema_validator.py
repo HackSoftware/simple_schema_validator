@@ -1,3 +1,5 @@
+import re
+
 from typing import Tuple, List, Dict, Any, Union, Deque, Optional
 
 from operator import itemgetter
@@ -71,8 +73,31 @@ def get_paths(d: Union[Data, Schema]) -> Paths:
     return parents
 
 
-class types:
-    pass
+OPTIONAL_REGEX = r'typing\.Union\[\w+, NoneType\]'
+
+
+def is_optional(t) -> bool:
+    """
+    Checks if t is Optional[T].
+    Possible solutions are listed in this SO thread:
+    https://stackoverflow.com/questions/46198178/unpack-optional-type-annotation-in-python-3-5-2
+
+    We are taking a stranger approach, by converting the type to a string,
+    and doing a regex match.
+    """
+
+    return bool(re.match(OPTIONAL_REGEX, str(t)))
+
+
+def get_optional_type(t) -> Any:
+    """
+    If t is Optional[T], this function returns T
+
+    Solution idea taken from this SO thread:
+    https://stackoverflow.com/questions/46198178/unpack-optional-type-annotation-in-python-3-5-2
+
+    """
+    return t.__args__[0]
 
 
 def type_check(schema, data, path) -> Tuple[bool, Optional[Dict[str, Any]]]:
@@ -90,6 +115,12 @@ def type_check(schema, data, path) -> Tuple[bool, Optional[Dict[str, Any]]]:
             return True, None
 
         return False, {'path': path, 'expected': None, 'actual': type(value)}
+
+    if is_optional(_type):
+        if value is None:
+            return True, None
+
+        _type = get_optional_type(_type)
 
     value_type = type(value)
 

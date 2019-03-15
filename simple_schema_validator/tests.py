@@ -1,6 +1,6 @@
 import unittest
 
-from typing import Any
+from typing import Any, Optional
 
 from schema_validator import schema_validator
 
@@ -442,6 +442,50 @@ class SchemaValidatorTests(unittest.TestCase):
             self.assertEqual(['b'], result.missing_keys)
             self.assertEqual(['c.d.g', 'f'], result.additional_keys)
             self.assertEqual([], result.type_errors)
+
+    def test_validating_optional_type(self):
+        schema = {
+            'a': Optional[int]
+        }
+
+        with self.subTest('None is valid for optional'):
+            data = {
+                'a': None
+            }
+
+            result = schema_validator(schema, data)
+
+            self.assertEqual(True, bool(result))
+            self.assertEqual([], result.missing_keys)
+            self.assertEqual([], result.additional_keys)
+            self.assertEqual([], result.type_errors)
+
+        with self.subTest('T is valid for Optional[T]'):
+            data = {
+                'a': 1
+            }
+
+            result = schema_validator(schema, data)
+
+            self.assertEqual(True, bool(result))
+            self.assertEqual([], result.missing_keys)
+            self.assertEqual([], result.additional_keys)
+            self.assertEqual([], result.type_errors)
+
+        with self.subTest('X is invalid for Optional[T]'):
+            data = {
+                'a': 'some_string'
+            }
+
+            result = schema_validator(schema, data)
+
+            self.assertEqual(False, bool(result))
+            self.assertEqual([], result.missing_keys)
+            self.assertEqual([], result.additional_keys)
+            self.assertEqual(
+                [{'path': 'a', 'expected': int, 'actual': str}],
+                result.type_errors
+            )
 
 
 if __name__ == '__main__':
