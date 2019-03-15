@@ -69,11 +69,22 @@ def get_paths(d: Union[Data, Schema]) -> Paths:
     return parents
 
 
-def type_check(value: Any, _type) -> bool:
-    if _type is Any:
-        return True
+def type_check(schema, data, path) -> Tuple[bool, Optional[Dict[str, Any]]]:
+    _type = get_nested(schema, path)
+    value = get_nested(data, path)
 
-    return type(value) is _type
+    if isinstance(value, Mapping):
+        return True, None
+
+    if _type is Any:
+        return True, None
+
+    value_type = type(value)
+
+    if value_type is _type:
+        return True, None
+
+    return False, {'path': path, 'expected': _type, 'actual': type(value)}
 
 
 class SchemaValidationResult:
@@ -111,14 +122,10 @@ def schema_validator(schema: Schema, data: Data) -> SchemaValidationResult:
     type_errors = []
 
     for path in existing_paths_in_schema:
-        _type = get_nested(schema, path)
-        value = get_nested(data, path)
+        valid_type, type_error = type_check(schema, data, path)
 
-        if isinstance(value, Mapping):
-            continue
-
-        if not type_check(value, _type):
-            type_errors.append({'path': path, 'expected': _type, 'actual': type(value)})
+        if not valid_type:
+            type_errors.append(type_error)
 
     return SchemaValidationResult(
         valid=schema_paths == data_paths and not type_errors,
