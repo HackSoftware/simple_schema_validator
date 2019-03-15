@@ -1,8 +1,8 @@
 import unittest
 
-from typing import Any, Optional
+from typing import Any
 
-from schema_validator import schema_validator
+from schema_validator import schema_validator, types
 
 
 class SchemaValidatorTests(unittest.TestCase):
@@ -445,7 +445,7 @@ class SchemaValidatorTests(unittest.TestCase):
 
     def test_validating_optional_type(self):
         schema = {
-            'a': Optional[int]
+            'a': types.Optional[int]
         }
 
         with self.subTest('None is valid for optional'):
