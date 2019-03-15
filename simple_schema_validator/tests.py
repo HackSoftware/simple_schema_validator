@@ -490,7 +490,12 @@ class SchemaValidatorTests(unittest.TestCase):
     def test_validating_optional_schema(self):
         schema = {
             'foo': types.Optional[{
-                'bar': int
+                'bar': int,
+                'baz': {
+                    'a': int,
+                    'b': int,
+                    'c': int
+                }
             }]
         }
 
@@ -509,7 +514,12 @@ class SchemaValidatorTests(unittest.TestCase):
         with self.subTest('Schema is valid for Optional[Schema]'):
             data = {
                 'foo': {
-                    'bar': 1
+                    'bar': 1,
+                    'baz': {
+                        'a': 1,
+                        'b': 1,
+                        'c': 1
+                    }
                 }
             }
 
@@ -519,6 +529,99 @@ class SchemaValidatorTests(unittest.TestCase):
             self.assertEqual([], result.missing_keys)
             self.assertEqual([], result.additional_keys)
             self.assertEqual([], result.type_errors)
+
+    def test_validating_deeply_nested_optional_schema(self):
+        schema = {
+            'a': types.Optional[{
+                'b': types.Optional[{
+                    'c': int
+                }]
+            }]
+        }
+
+        with self.subTest('Value of key `a` can be None'):
+            data = {
+                'a': None
+            }
+
+            result = schema_validator(schema, data)
+
+            self.assertEqual(True, bool(result))
+            self.assertEqual([], result.missing_keys)
+            self.assertEqual([], result.additional_keys)
+            self.assertEqual([], result.type_errors)
+
+        with self.subTest('Value of key `a.b` can be None'):
+            data = {
+                'a': {
+                    'b': None
+                }
+            }
+
+            result = schema_validator(schema, data)
+
+            self.assertEqual(True, bool(result))
+            self.assertEqual([], result.missing_keys)
+            self.assertEqual([], result.additional_keys)
+            self.assertEqual([], result.type_errors)
+
+        with self.subTest('Value of key `a.b` can be invalid'):
+            data = {
+                'a': {
+                    'b': 1
+                }
+            }
+
+            result = schema_validator(schema, data)
+
+            self.assertEqual(False, bool(result))
+            self.assertEqual(['a.b.c'], result.missing_keys)
+            self.assertEqual([], result.additional_keys)
+            self.assertEqual(
+                [
+                    {
+                        'path': 'a.b',
+                        'expected': {'c': int},
+                        'actual': int
+                    }
+                ],
+                result.type_errors
+            )
+
+        with self.subTest('Value of key `a.b.c` can be valid'):
+            data = {
+                'a': {
+                    'b': {
+                        'c': 1
+                    }
+                }
+            }
+
+            result = schema_validator(schema, data)
+
+            self.assertEqual(True, bool(result))
+            self.assertEqual([], result.missing_keys)
+            self.assertEqual([], result.additional_keys)
+            self.assertEqual([], result.type_errors)
+
+        with self.subTest('Value of key `a.b.c` can be invalid'):
+            data = {
+                'a': {
+                    'b': {
+                        'c': 'some_string'
+                    }
+                }
+            }
+
+            result = schema_validator(schema, data)
+
+            self.assertEqual(False, bool(result))
+            self.assertEqual([], result.missing_keys)
+            self.assertEqual([], result.additional_keys)
+            self.assertEqual(
+                [{'path': 'a.b.c', 'expected': int, 'actual': str}],
+                result.type_errors
+            )
 
 
 if __name__ == '__main__':

@@ -1,3 +1,5 @@
+from copy import deepcopy
+
 from typing import Tuple, List, Dict, Any, Union, Deque, Optional
 
 from operator import itemgetter
@@ -49,6 +51,17 @@ def get_nested(d: Data, path: str) -> Any:
     return result
 
 
+def set_nested(d: Data, path: str, value: Any) -> None:
+    parts = path.split('.')
+
+    last_part = parts[-1]
+
+    for part in parts[:len(parts) - 1]:
+        d = d[part]
+
+    d[last_part] = value
+
+
 def get_paths(d: Union[Data, Schema]) -> Tuple[Paths, OptionalPaths]:
     stack: Deque[Tuple[str, Optional[str]]] = deque()
     parents = {}  # item: parent, top-level items have None as parent
@@ -69,7 +82,7 @@ def get_paths(d: Union[Data, Schema]) -> Tuple[Paths, OptionalPaths]:
         if is_optional_schema(value):
             value = get_optional_type(value)
 
-            d[path] = value
+            set_nested(d, path, value)
 
             optional_paths.append(path)
 
@@ -190,6 +203,8 @@ def remove_optional_values(data, optional_paths, schema_paths):
 
 
 def schema_validator(schema: Schema, data: Data) -> SchemaValidationResult:
+    schema = deepcopy(schema)
+
     schema_paths_mapping, optional_paths = get_paths(schema)
     data_paths_mapping, _ = get_paths(data)
 
