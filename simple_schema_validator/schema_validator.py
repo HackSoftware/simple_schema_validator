@@ -108,7 +108,7 @@ def schema_validator(schema: Schema, data: Data) -> SchemaValidationResult:
 
     existing_paths_in_schema = data_paths - additional_keys
 
-    correct_types = True
+    type_errors = []
 
     for path in existing_paths_in_schema:
         _type = get_nested(schema, path)
@@ -118,12 +118,11 @@ def schema_validator(schema: Schema, data: Data) -> SchemaValidationResult:
             continue
 
         if not type_check(value, _type):
-            correct_types = False
-            break
+            type_errors.append({'path': path, 'expected': _type, 'actual': type(value)})
 
     return SchemaValidationResult(
-        valid=schema_paths == data_paths and correct_types,
+        valid=schema_paths == data_paths and not type_errors,
         missing_keys=sorted(missing_keys),
         additional_keys=sorted(additional_keys),
-        type_errors=[]
+        type_errors=type_errors
     )

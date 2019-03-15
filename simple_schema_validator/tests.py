@@ -198,6 +198,10 @@ class SchemaValidatorTests(unittest.TestCase):
             self.assertEqual(False, bool(result))
             self.assertEqual([], result.missing_keys)
             self.assertEqual([], result.additional_keys)
+            self.assertEqual(
+                [{'path': 'a', 'expected': int, 'actual': str}],
+                result.type_errors
+            )
 
         with self.subTest('Valid schema, valid types'):
             schema = {
