@@ -4,7 +4,8 @@ from typing import List, Dict, Any, Optional
 
 from operator import itemgetter
 
-from collections import deque, Mapping
+from .schema_types import type_check
+from .utils import replace_optional_schema_paths, get_paths
 
 
 MissingKeys = List[str]
@@ -14,137 +15,6 @@ Data = Dict[str, Any]
 
 Paths = Dict[str, Optional[str]]  # item: parent
 OptionalPaths = List[str]
-
-
-def get_paths(d):
-    stack = deque()
-    parents = {}  # item: parent, top-level items have None as parent
-    paths = {}
-
-    for key, value in d.items():
-        # Append a tuple of (item, parent, value, path)
-        stack.append((key, None, value, [key]))
-
-    while len(stack) > 0:
-        item, parent, value, path = stack.pop()
-
-        parents[item] = parent
-        paths['.'.join(path)] = value
-
-        if type(value) is dict:
-            for key, new_value in value.items():
-                # Append a tuple of (item, parent)
-                stack.append((key, item, new_value, [p for p in path] + [key]))
-
-    return paths
-
-
-def set_nested(d: Data, path: str, value: Any) -> None:
-    parts = path.split('.')
-
-    last_part = parts[-1]
-
-    for part in parts[:len(parts) - 1]:
-        d = d[part]
-
-    d[last_part] = value
-
-
-def replace_optional_schema_paths(schema):
-    stack = deque()
-    optional_paths = []
-
-    for key, value in schema.items():
-        # Append a tuple of (item, value, path)
-        stack.append((key, value, [key]))
-
-    while len(stack) > 0:
-        item, value, path = stack.pop()
-
-        if is_optional_schema(value):
-            value = get_optional_type(value)
-
-            set_nested(schema, '.'.join(path), value)
-
-            optional_paths.append('.'.join(path))
-
-        if type(value) is dict:
-            for key, new_value in value.items():
-                # Append a tuple of (item, parent)
-                stack.append((key, new_value, [p for p in path] + [key]))
-
-    return get_paths(schema), optional_paths
-
-
-class OptionalType:
-    def __init__(self, T: Any):
-        self.T = T
-
-
-class OptionalTypeFactory:
-    def __getitem__(self, T):
-        return OptionalType(T)
-
-
-def is_optional(t: Any) -> bool:
-    return type(t) is OptionalType
-
-
-def get_optional_type(t: OptionalType) -> Any:
-    """
-    If t is Optional[T], this function returns T
-
-    Solution idea taken from this SO thread:
-    https://stackoverflow.com/questions/46198178/unpack-optional-type-annotation-in-python-3-5-2
-
-    """
-    return t.T
-
-
-def is_optional_schema(v: Any) -> bool:
-    return is_optional(v) and isinstance(get_optional_type(v), Mapping)
-
-
-class types:
-    Optional = OptionalTypeFactory()
-
-
-def type_check(schema_paths_mapping, data_paths_mapping, path, optional_paths):
-    _type = schema_paths_mapping.get(path)
-    value = data_paths_mapping.get(path)
-
-    if isinstance(value, Mapping):
-        return True, None
-
-    if _type is Any:
-        return True, None
-
-    if _type is None:
-        if value is None:
-            return True, None
-
-        return False, {'path': path, 'expected': None, 'actual': type(value)}
-
-    if is_optional(_type):
-        if value is None:
-            return True, None
-
-        _type = get_optional_type(_type)
-
-    value_type = type(value)
-
-    if value_type is _type:
-        return True, None
-
-    actual: Any = type(value)
-
-    if value is None:
-        if path in optional_paths:
-            return True, None
-
-        actual = None
-
-    return False, {'path': path, 'expected': _type, 'actual': actual}
 
 
 class SchemaValidationResult:
