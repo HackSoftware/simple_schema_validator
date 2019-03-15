@@ -40,30 +40,56 @@ def type_check(schema_paths_mapping, data_paths_mapping, path, optional_paths):
     _type = schema_paths_mapping.get(path)
     value = data_paths_mapping.get(path)
 
+    """
+    If the given value is another dictionary, don't type check.
+    Consider this a valid type.
+    """
     if isinstance(value, Mapping):
         return True, None
 
+    """
+    If type is Any, any we consider this a valid type.
+    """
     if _type is Any:
         return True, None
 
+    """
+    If type is None, we check if the value is also None.
+    """
     if _type is None:
         if value is None:
             return True, None
 
         return False, {'path': path, 'expected': None, 'actual': type(value)}
 
+    """
+    If type is types.Optional[T], we do the following:
+
+    1) If value is None => valid.
+    2) Otherwise, we say current type is T and continue.
+    """
     if is_optional(_type):
         if value is None:
             return True, None
 
         _type = get_optional_type(_type)
 
+    """
+    Straight-forward case.
+    We take the type of the value and compare.
+    """
     value_type = type(value)
 
     if value_type is _type:
         return True, None
 
-    actual: Any = type(value)
+    """
+    If value is None but the path is in the optional paths,
+    we consider this valid.
+
+    Otherwise we fail with the actual type of the value.
+    """
+    actual = value_type
 
     if value is None:
         if path in optional_paths:
