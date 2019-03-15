@@ -11,6 +11,7 @@ Schema = Dict[str, Any]
 Data = Dict[str, Any]
 
 Paths = Dict[str, Optional[str]]  # item: parent
+OptionalPaths = List[str]
 
 
 def build_path(item: str, parents: Paths) -> str:
@@ -48,7 +49,7 @@ def get_nested(d: Data, path: str) -> Any:
     return result
 
 
-def get_paths(d: Union[Data, Schema]) -> Paths:
+def get_paths(d: Union[Data, Schema]) -> Tuple[Paths, OptionalPaths]:
     stack: Deque[Tuple[str, Optional[str]]] = deque()
     parents = {}  # item: parent, top-level items have None as parent
     optional_paths = []
@@ -189,13 +190,13 @@ def remove_optional_values(data, optional_paths, schema_paths):
 
 
 def schema_validator(schema: Schema, data: Data) -> SchemaValidationResult:
-    schema_paths, optional_paths = get_paths(schema)
-    data_paths, _ = get_paths(data)
+    schema_paths_mapping, optional_paths = get_paths(schema)
+    data_paths_mapping, _ = get_paths(data)
 
-    schema_paths = set(build_paths(schema_paths))
-    data_paths = set(build_paths(data_paths))
+    schema_paths = set(build_paths(schema_paths_mapping))
+    data_paths = set(build_paths(data_paths_mapping))
 
-    optional_paths = set(optional_paths)
+    optional_paths = set(optional_paths)  # type: ignore
 
     schema_paths = remove_optional_values(data, optional_paths, schema_paths)
 

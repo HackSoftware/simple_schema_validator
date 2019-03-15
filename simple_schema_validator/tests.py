@@ -494,7 +494,7 @@ class SchemaValidatorTests(unittest.TestCase):
             }]
         }
 
-        with self.subTest('None is valid for optional'):
+        with self.subTest('None is valid for Optional[Schema]'):
             data = {
                 'foo': None
             }
