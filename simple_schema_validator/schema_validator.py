@@ -1,6 +1,8 @@
 from typing import Tuple, List, Dict, Any, Union, Deque, Optional
 
-from collections import deque
+from operator import itemgetter
+
+from collections import deque, Mapping
 
 
 MissingKeys = List[str]
@@ -69,6 +71,24 @@ def get_paths(d: Union[Data, Schema]) -> Paths:
     return parents
 
 
+def type_check(schema, data, path) -> Tuple[bool, Optional[Dict[str, Any]]]:
+    _type = get_nested(schema, path)
+    value = get_nested(data, path)
+
+    if isinstance(value, Mapping):
+        return True, None
+
+    if _type is Any:
+        return True, None
+
+    value_type = type(value)
+
+    if value_type is _type:
+        return True, None
+
+    return False, {'path': path, 'expected': _type, 'actual': type(value)}
+
+
 class SchemaValidationResult:
     def __init__(self, *, valid, missing_keys, additional_keys, type_errors):
         self.__valid = valid
@@ -99,9 +119,19 @@ def schema_validator(schema: Schema, data: Data) -> SchemaValidationResult:
     missing_keys = schema_paths - data_paths
     additional_keys = data_paths - schema_paths
 
+    existing_paths_in_schema = data_paths - additional_keys
+
+    type_errors = []
+
+    for path in existing_paths_in_schema:
+        valid_type, type_error = type_check(schema, data, path)
+
+        if not valid_type:
+            type_errors.append(type_error)
+
     return SchemaValidationResult(
-        valid=schema_paths == data_paths,
+        valid=schema_paths == data_paths and not type_errors,
         missing_keys=sorted(missing_keys),
         additional_keys=sorted(additional_keys),
-        type_errors=[]
+        type_errors=sorted(type_errors, key=itemgetter('path'))
     )
