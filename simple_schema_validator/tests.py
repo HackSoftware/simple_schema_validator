@@ -279,6 +279,134 @@ class SchemaValidatorTests(unittest.TestCase):
         self.assertEqual([], result.additional_keys)
         self.assertEqual([], result.type_errors)
 
+    def test_validating_types_with_nested_schema(self):
+        with self.subTest('Valid schema, invalid types'):
+            schema = {
+                'a': int,
+                'b': int,
+                'c': {
+                    'd': {
+                        'e': int
+                    }
+                }
+            }
+
+            data = {
+                'a': 'some_string',
+                'b': 'some_string',
+                'c': {
+                    'd': {
+                        'e': 'some_string'
+                    }
+                }
+            }
+
+            result = schema_validator(schema, data)
+
+            self.assertEqual(False, bool(result))
+            self.assertEqual([], result.missing_keys)
+            self.assertEqual([], result.additional_keys)
+            self.assertEqual(
+                [
+                    {'path': 'a', 'expected': int, 'actual': str},
+                    {'path': 'b', 'expected': int, 'actual': str},
+                    {'path': 'c.d.e', 'expected': int, 'actual': str}
+                ],
+                result.type_errors
+            )
+
+        with self.subTest('Valid schema, valid types'):
+            schema = {
+                'a': int,
+                'b': int,
+                'c': {
+                    'd': {
+                        'e': int
+                    }
+                }
+            }
+
+            data = {
+                'a': 1,
+                'b': 1,
+                'c': {
+                    'd': {
+                        'e': 1
+                    }
+                }
+            }
+
+            result = schema_validator(schema, data)
+
+            self.assertEqual(True, bool(result))
+            self.assertEqual([], result.missing_keys)
+            self.assertEqual([], result.additional_keys)
+            self.assertEqual([], result.type_errors)
+
+        with self.subTest('Invalid schema, invalid types'):
+            schema = {
+                'a': int,
+                'b': int,
+                'c': {
+                    'd': {
+                        'e': int
+                    }
+                }
+            }
+
+            data = {
+                'a': 'some_string',
+                'c': {
+                    'd': {
+                        'e': 'some_string',
+                        'g': 2
+                    }
+                },
+                'f': 1
+            }
+
+            result = schema_validator(schema, data)
+
+            self.assertEqual(False, bool(result))
+            self.assertEqual(['b'], result.missing_keys)
+            self.assertEqual(['c.d.g', 'f'], result.additional_keys)
+            self.assertEqual(
+                [
+                    {'path': 'a', 'expected': int, 'actual': str},
+                    {'path': 'c.d.e', 'expected': int, 'actual': str},
+                ],
+                result.type_errors
+            )
+
+        with self.subTest('Invalid schema, valid types'):
+            schema = {
+                'a': int,
+                'b': int,
+                'c': {
+                    'd': {
+                        'e': int
+                    }
+                }
+            }
+
+            data = {
+                'a': 1,
+                'c': {
+                    'd': {
+                        'e': 1,
+                        'g': 2
+                    }
+                },
+                'f': 1
+            }
+
+            result = schema_validator(schema, data)
+
+            self.assertEqual(False, bool(result))
+            self.assertEqual(['b'], result.missing_keys)
+            self.assertEqual(['c.d.g', 'f'], result.additional_keys)
+            self.assertEqual([], result.type_errors)
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -1,5 +1,7 @@
 from typing import Tuple, List, Dict, Any, Union, Deque, Optional
 
+from operator import itemgetter
+
 from collections import deque, Mapping
 
 
@@ -131,5 +133,5 @@ def schema_validator(schema: Schema, data: Data) -> SchemaValidationResult:
         valid=schema_paths == data_paths and not type_errors,
         missing_keys=sorted(missing_keys),
         additional_keys=sorted(additional_keys),
-        type_errors=type_errors
+        type_errors=sorted(type_errors, key=itemgetter('path'))
     )
