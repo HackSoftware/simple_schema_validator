@@ -2,7 +2,7 @@ import unittest
 
 from typing import Any
 
-from schema_validator import schema_validator, types
+from simple_schema_validator import schema_validator, types
 
 
 class SchemaValidatorTests(unittest.TestCase):
