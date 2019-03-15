@@ -487,6 +487,39 @@ class SchemaValidatorTests(unittest.TestCase):
                 result.type_errors
             )
 
+    def test_validating_optional_schema(self):
+        schema = {
+            'foo': types.Optional[types.Schema({
+                'bar': int
+            })]
+        }
+
+        with self.subTest('None is valid for optional'):
+            data = {
+                'foo': None
+            }
+
+            result = schema_validator(schema, data)
+
+            self.assertEqual(True, bool(result))
+            self.assertEqual([], result.missing_keys)
+            self.assertEqual([], result.additional_keys)
+            self.assertEqual([], result.type_errors)
+
+        with self.subTest('Schema is valid for Optional[Schema]'):
+            data = {
+                'foo': {
+                    'bar': 1
+                }
+            }
+
+            result = schema_validator(schema, data)
+
+            self.assertEqual(True, bool(result))
+            self.assertEqual([], result.missing_keys)
+            self.assertEqual([], result.additional_keys)
+            self.assertEqual([], result.type_errors)
+
 
 if __name__ == '__main__':
     unittest.main()
