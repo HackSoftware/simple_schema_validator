@@ -1,5 +1,11 @@
 # Simple schema validator
 
+- [Simple schema validator](#simple-schema-validator)
+    - [Basic usage](#basic-usage)
+    - [Type checking](#type-checking)
+        - [Optional types](#optional-types)
+
+
 A dead-simple utility that validates if object has a certain structure. Used in some of our projects.
 
 ## Basic usage
@@ -51,15 +57,19 @@ schema = {
   }
 }
 
-result = schema_validator(schema, data)
+validation = schema_validator(schema, data)
 
 if not result:
-    print(f'Schema not valid. Missing: {result.missing_keys}, additional: {result.additional_keys}')
+    print(f'Keys in data, but not in schema: {validation.additional_keys}')
+    print(f'Keys in schema, but not in data: {validation.missing_keys}')
+    print(f'Keys with different type from schema {validation.type_errors}')
 ```
 
 * `missing_keys` are those keys that are required in the `schema`, but not found in `data`.
 * `additional_keys` are those keys present in `data`, but not required by the `schema`.
-* Nested keys are represented with "dot" notation - `profile.email`, `tokens.jwt`, etc.
+* `validation_errors` are those keys, that are having a different type in `data`, from the defined in `schema`.
+
+**Nested keys are represented with "dot" notation - `profile.email`, `tokens.jwt`, etc.**
 
 ## Type checking
 
@@ -196,3 +206,7 @@ assert bool(schema_validator(schema, data_2)) is False
 assert bool(schema_validator(schema, data_3)) is True
 assert bool(schema_validator(schema, data_4)) is False
 ```
+
+## Examples
+
+For examples, check the [examples](examples/) folder or the tests for the project.
