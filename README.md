@@ -77,11 +77,12 @@ The util supports simple schema type checking.
 
 Currently, the supported types in the schema are:
 
-* `Any`
 * `int`
 * `float`
 * `str`
 * `bool`
+* `typing.Any` (from Python `typing` library)
+* `simple_schema_validator.types.Optional` (custom type, define in the package)
 
 If the type is `Any`, no type checking is done.
 
