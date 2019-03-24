@@ -96,7 +96,7 @@ def schema_validator(schema: Schema, data: Data) -> SchemaValidationResult:
         )
 
         if not valid_type:
-            type_errors.append(type_error)
+            type_errors.extend(type_error)
 
     return SchemaValidationResult(
         valid=schema_paths == data_paths and not type_errors,

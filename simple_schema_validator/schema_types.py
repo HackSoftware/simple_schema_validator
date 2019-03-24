@@ -40,8 +40,51 @@ def is_any_or_optional_any(v: Any) -> bool:
     return is_any(v) or (is_optional(v) and is_any(get_optional_type(v)))
 
 
+def is_list(v: Any) -> bool:
+    return type(v) is list
+
+
+def get_list_type(v: Any) -> type:
+    if len(v) > 0:
+        return v[0]
+
+    return Any
+
+
+def get_expected_type(v: Any) -> type:
+    if is_list(v):
+        return list
+
+    return v
+
+
 class types:
     Optional = OptionalTypeFactory()
+
+
+def type_check_lists(_type, value, path):
+    if not is_list(_type):
+        return None
+
+    errors = []
+
+    list_type = get_list_type(_type)
+
+    for index, item in enumerate(value):
+        if is_any(list_type):
+            continue
+
+        if type(item) is not list_type:
+            errors.append({
+                'path': f'{path}[{index}]',
+                'expected': list_type,
+                'actual': type(item)
+            })
+
+    if errors:
+        return False, errors
+
+    return True, None
 
 
 def type_check(schema_paths_mapping, data_paths_mapping, path, optional_paths):
@@ -68,7 +111,7 @@ def type_check(schema_paths_mapping, data_paths_mapping, path, optional_paths):
         if value is None:
             return True, None
 
-        return False, {'path': path, 'expected': None, 'actual': type(value)}
+        return False, [{'path': path, 'expected': None, 'actual': type(value)}]
 
     """
     If type is types.Optional[T], we do the following:
@@ -81,6 +124,12 @@ def type_check(schema_paths_mapping, data_paths_mapping, path, optional_paths):
             return True, None
 
         _type = get_optional_type(_type)
+
+    if is_list(value):
+        type_check_lists_result = type_check_lists(_type, value, path)
+
+        if type_check_lists_result is not None:
+            return type_check_lists_result
 
     """
     Straight-forward case.
@@ -105,4 +154,4 @@ def type_check(schema_paths_mapping, data_paths_mapping, path, optional_paths):
 
         actual = None
 
-    return False, {'path': path, 'expected': _type, 'actual': actual}
+    return False, [{'path': path, 'expected': get_expected_type(_type), 'actual': actual}]
