@@ -6,6 +6,19 @@ from simple_schema_validator import schema_validator, types
 
 
 class SchemaValidatorTests(unittest.TestCase):
+    def assert_valid(self, validation_result):
+        self.assertEqual(True, bool(validation_result))
+        self.assertEqual([], validation_result.missing_keys)
+        self.assertEqual([], validation_result.additional_keys)
+
+    def test_empty_data_and_schema_are_considered_valid(self):
+        schema = {}
+        data = {}
+
+        validation_result = schema_validator(schema, data)
+
+        self.assert_valid(validation_result)
+
     def test_validating_plain_schema(self):
         schema = {
             'a': Any,
