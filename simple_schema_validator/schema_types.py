@@ -99,7 +99,7 @@ def type_check(schema_paths_mapping, data_paths_mapping, path, optional_paths):
         return True, None
 
     """
-    If type is any, any we consider this a valid type.
+    If type is any, we consider this a valid type.
     """
     if is_any(_type):
         return True, None
