@@ -6,19 +6,19 @@ from simple_schema_validator import schema_validator, types
 
 
 class SchemaValidatorTests(unittest.TestCase):
-    def assert_valid(self, validation_result):
-        self.assertEqual(True, bool(validation_result))
-        self.assertEqual([], validation_result.missing_keys)
-        self.assertEqual([], validation_result.additional_keys)
-        self.assertEqual([], validation_result.type_errors)
+    def assert_valid(self, validation):
+        self.assertEqual(True, bool(validation))
+        self.assertEqual([], validation.missing_keys)
+        self.assertEqual([], validation.additional_keys)
+        self.assertEqual([], validation.type_errors)
 
     def test_empty_data_and_schema_are_considered_valid(self):
         schema = {}
         data = {}
 
-        validation_result = schema_validator(schema, data)
+        validation = schema_validator(schema, data)
 
-        self.assert_valid(validation_result)
+        self.assert_valid(validation)
 
     def test_validating_plain_schema(self):
         schema = {
@@ -34,9 +34,9 @@ class SchemaValidatorTests(unittest.TestCase):
                 'c': 3
             }
 
-            validation_result = schema_validator(schema, data)
+            validation = schema_validator(schema, data)
 
-            self.assert_valid(validation_result)
+            self.assert_valid(validation)
 
         with self.subTest('Test with invalid data with missing & additional keys.'):
             data = {
@@ -45,11 +45,11 @@ class SchemaValidatorTests(unittest.TestCase):
                 'd': 4
             }
 
-            validation_result = schema_validator(schema, data)
+            validation = schema_validator(schema, data)
 
-            self.assertEqual(False, bool(validation_result))
-            self.assertEqual(['c'], validation_result.missing_keys)
-            self.assertEqual(['d'], validation_result.additional_keys)
+            self.assertEqual(False, bool(validation))
+            self.assertEqual(['c'], validation.missing_keys)
+            self.assertEqual(['d'], validation.additional_keys)
 
     def test_validating_one_level_nested_schema(self):
         schema = {
@@ -70,9 +70,9 @@ class SchemaValidatorTests(unittest.TestCase):
                     'f': 4
                 }
             }
-            validation_result = schema_validator(schema, data)
+            validation = schema_validator(schema, data)
 
-            self.assert_valid(validation_result)
+            self.assert_valid(validation)
 
         with self.subTest('Test with invalid data with missing & additional keys.'):
             data = {
@@ -84,11 +84,11 @@ class SchemaValidatorTests(unittest.TestCase):
                 'h': 10
             }
 
-            validation_result = schema_validator(schema, data)
+            validation = schema_validator(schema, data)
 
-            self.assertEqual(False, bool(validation_result))
-            self.assertEqual(['c.f'], validation_result.missing_keys)
-            self.assertEqual(['h'], validation_result.additional_keys)
+            self.assertEqual(False, bool(validation))
+            self.assertEqual(['c.f'], validation.missing_keys)
+            self.assertEqual(['h'], validation.additional_keys)
 
     def test_validating_two_level_nested_schema(self):
         schema = {
@@ -112,9 +112,9 @@ class SchemaValidatorTests(unittest.TestCase):
                 }
             }
 
-            validation_result = schema_validator(schema, data)
+            validation = schema_validator(schema, data)
 
-            self.assert_valid(validation_result)
+            self.assert_valid(validation)
 
         with self.subTest('Test with invalid data with missing & additional keys.'):
             data = {
@@ -127,11 +127,11 @@ class SchemaValidatorTests(unittest.TestCase):
                 }
             }
 
-            validation_result = schema_validator(schema, data)
+            validation = schema_validator(schema, data)
 
-            self.assertEqual(False, bool(validation_result))
-            self.assertEqual(['c.d.e'], validation_result.missing_keys)
-            self.assertEqual(['c.d.f'], validation_result.additional_keys)
+            self.assertEqual(False, bool(validation))
+            self.assertEqual(['c.d.e'], validation.missing_keys)
+            self.assertEqual(['c.d.f'], validation.additional_keys)
 
     def test_validating_multiple_level_nested_schema(self):
         schema = {
@@ -163,9 +163,9 @@ class SchemaValidatorTests(unittest.TestCase):
                 'r': 23,
             }
 
-            validation_result = schema_validator(schema, data)
+            validation = schema_validator(schema, data)
 
-            self.assert_valid(validation_result)
+            self.assert_valid(validation)
 
         with self.subTest('Test with invalid data with missing & additional keys.'):
             data = {
@@ -183,11 +183,11 @@ class SchemaValidatorTests(unittest.TestCase):
                 't': 2
             }
 
-            validation_result = schema_validator(schema, data)
+            validation = schema_validator(schema, data)
 
-            self.assertEqual(False, bool(validation_result))
-            self.assertEqual(['c.d.e.g', 'r'], validation_result.missing_keys)
-            self.assertEqual(['c.d.e.s', 'c.d.f', 't'], validation_result.additional_keys)
+            self.assertEqual(False, bool(validation))
+            self.assertEqual(['c.d.e.g', 'r'], validation.missing_keys)
+            self.assertEqual(['c.d.e.s', 'c.d.f', 't'], validation.additional_keys)
 
     def test_validating_types_with_plain_schema(self):
         with self.subTest('Valid schema, invalid types'):
@@ -199,14 +199,14 @@ class SchemaValidatorTests(unittest.TestCase):
                 'a': 'some_string'
             }
 
-            validation_result = schema_validator(schema, data)
+            validation = schema_validator(schema, data)
 
-            self.assertEqual(False, bool(validation_result))
-            self.assertEqual([], validation_result.missing_keys)
-            self.assertEqual([], validation_result.additional_keys)
+            self.assertEqual(False, bool(validation))
+            self.assertEqual([], validation.missing_keys)
+            self.assertEqual([], validation.additional_keys)
             self.assertEqual(
                 [{'path': 'a', 'expected': int, 'actual': str}],
-                validation_result.type_errors
+                validation.type_errors
             )
 
         with self.subTest('Valid schema, valid types'):
@@ -218,9 +218,9 @@ class SchemaValidatorTests(unittest.TestCase):
                 'a': 1
             }
 
-            validation_result = schema_validator(schema, data)
+            validation = schema_validator(schema, data)
 
-            self.assert_valid(validation_result)
+            self.assert_valid(validation)
 
         with self.subTest('Invalid schema, invalid types'):
             schema = {
@@ -233,14 +233,14 @@ class SchemaValidatorTests(unittest.TestCase):
                 'c': 1
             }
 
-            validation_result = schema_validator(schema, data)
+            validation = schema_validator(schema, data)
 
-            self.assertEqual(False, bool(validation_result))
-            self.assertEqual(['b'], validation_result.missing_keys)
-            self.assertEqual(['c'], validation_result.additional_keys)
+            self.assertEqual(False, bool(validation))
+            self.assertEqual(['b'], validation.missing_keys)
+            self.assertEqual(['c'], validation.additional_keys)
             self.assertEqual(
                 [{'path': 'a', 'expected': int, 'actual': str}],
-                validation_result.type_errors
+                validation.type_errors
             )
 
         with self.subTest('Invalid schema, valid types'):
@@ -254,12 +254,12 @@ class SchemaValidatorTests(unittest.TestCase):
                 'c': 1
             }
 
-            validation_result = schema_validator(schema, data)
+            validation = schema_validator(schema, data)
 
-            self.assertEqual(False, bool(validation_result))
-            self.assertEqual(['b'], validation_result.missing_keys)
-            self.assertEqual(['c'], validation_result.additional_keys)
-            self.assertEqual([], validation_result.type_errors)
+            self.assertEqual(False, bool(validation))
+            self.assertEqual(['b'], validation.missing_keys)
+            self.assertEqual(['c'], validation.additional_keys)
+            self.assertEqual([], validation.type_errors)
 
     def test_validating_different_types(self):
         with self.subTest('Valid types'):
@@ -279,9 +279,9 @@ class SchemaValidatorTests(unittest.TestCase):
                 'e': None
             }
 
-            validation_result = schema_validator(schema, data)
+            validation = schema_validator(schema, data)
 
-            self.assert_valid(validation_result)
+            self.assert_valid(validation)
 
         with self.subTest('Invalid types'):
             schema = {
@@ -300,11 +300,11 @@ class SchemaValidatorTests(unittest.TestCase):
                 'e': 'some_string'
             }
 
-            validation_result = schema_validator(schema, data)
+            validation = schema_validator(schema, data)
 
-            self.assertEqual(False, bool(validation_result))
-            self.assertEqual([], validation_result.missing_keys)
-            self.assertEqual([], validation_result.additional_keys)
+            self.assertEqual(False, bool(validation))
+            self.assertEqual([], validation.missing_keys)
+            self.assertEqual([], validation.additional_keys)
             self.assertEqual(
                 [
                     {'actual': str, 'expected': int, 'path': 'a'},
@@ -313,7 +313,7 @@ class SchemaValidatorTests(unittest.TestCase):
                     {'actual': None, 'expected': bool, 'path': 'd'},
                     {'actual': str, 'expected': None, 'path': 'e'}
                 ],
-                validation_result.type_errors
+                validation.type_errors
             )
 
     def test_validating_types_with_nested_schema(self):
@@ -338,18 +338,18 @@ class SchemaValidatorTests(unittest.TestCase):
                 }
             }
 
-            validation_result = schema_validator(schema, data)
+            validation = schema_validator(schema, data)
 
-            self.assertEqual(False, bool(validation_result))
-            self.assertEqual([], validation_result.missing_keys)
-            self.assertEqual([], validation_result.additional_keys)
+            self.assertEqual(False, bool(validation))
+            self.assertEqual([], validation.missing_keys)
+            self.assertEqual([], validation.additional_keys)
             self.assertEqual(
                 [
                     {'path': 'a', 'expected': int, 'actual': str},
                     {'path': 'b', 'expected': int, 'actual': str},
                     {'path': 'c.d.e', 'expected': int, 'actual': str}
                 ],
-                validation_result.type_errors
+                validation.type_errors
             )
 
         with self.subTest('Valid schema, valid types'):
@@ -373,9 +373,9 @@ class SchemaValidatorTests(unittest.TestCase):
                 }
             }
 
-            validation_result = schema_validator(schema, data)
+            validation = schema_validator(schema, data)
 
-            self.assert_valid(validation_result)
+            self.assert_valid(validation)
 
         with self.subTest('Invalid schema, invalid types'):
             schema = {
@@ -399,17 +399,17 @@ class SchemaValidatorTests(unittest.TestCase):
                 'f': 1
             }
 
-            validation_result = schema_validator(schema, data)
+            validation = schema_validator(schema, data)
 
-            self.assertEqual(False, bool(validation_result))
-            self.assertEqual(['b'], validation_result.missing_keys)
-            self.assertEqual(['c.d.g', 'f'], validation_result.additional_keys)
+            self.assertEqual(False, bool(validation))
+            self.assertEqual(['b'], validation.missing_keys)
+            self.assertEqual(['c.d.g', 'f'], validation.additional_keys)
             self.assertEqual(
                 [
                     {'path': 'a', 'expected': int, 'actual': str},
                     {'path': 'c.d.e', 'expected': int, 'actual': str},
                 ],
-                validation_result.type_errors
+                validation.type_errors
             )
 
         with self.subTest('Invalid schema, valid types'):
@@ -434,12 +434,12 @@ class SchemaValidatorTests(unittest.TestCase):
                 'f': 1
             }
 
-            validation_result = schema_validator(schema, data)
+            validation = schema_validator(schema, data)
 
-            self.assertEqual(False, bool(validation_result))
-            self.assertEqual(['b'], validation_result.missing_keys)
-            self.assertEqual(['c.d.g', 'f'], validation_result.additional_keys)
-            self.assertEqual([], validation_result.type_errors)
+            self.assertEqual(False, bool(validation))
+            self.assertEqual(['b'], validation.missing_keys)
+            self.assertEqual(['c.d.g', 'f'], validation.additional_keys)
+            self.assertEqual([], validation.type_errors)
 
     def test_validating_optional_type(self):
         schema = {
@@ -451,32 +451,32 @@ class SchemaValidatorTests(unittest.TestCase):
                 'a': None
             }
 
-            validation_result = schema_validator(schema, data)
+            validation = schema_validator(schema, data)
 
-            self.assert_valid(validation_result)
+            self.assert_valid(validation)
 
         with self.subTest('T is valid for Optional[T]'):
             data = {
                 'a': 1
             }
 
-            validation_result = schema_validator(schema, data)
+            validation = schema_validator(schema, data)
 
-            self.assert_valid(validation_result)
+            self.assert_valid(validation)
 
         with self.subTest('X is invalid for Optional[T]'):
             data = {
                 'a': 'some_string'
             }
 
-            validation_result = schema_validator(schema, data)
+            validation = schema_validator(schema, data)
 
-            self.assertEqual(False, bool(validation_result))
-            self.assertEqual([], validation_result.missing_keys)
-            self.assertEqual([], validation_result.additional_keys)
+            self.assertEqual(False, bool(validation))
+            self.assertEqual([], validation.missing_keys)
+            self.assertEqual([], validation.additional_keys)
             self.assertEqual(
                 [{'path': 'a', 'expected': int, 'actual': str}],
-                validation_result.type_errors
+                validation.type_errors
             )
 
     def test_validating_optional_schema(self):
@@ -496,9 +496,9 @@ class SchemaValidatorTests(unittest.TestCase):
                 'foo': None
             }
 
-            validation_result = schema_validator(schema, data)
+            validation = schema_validator(schema, data)
 
-            self.assert_valid(validation_result)
+            self.assert_valid(validation)
 
         with self.subTest('Schema is valid for Optional[Schema]'):
             data = {
@@ -512,9 +512,9 @@ class SchemaValidatorTests(unittest.TestCase):
                 }
             }
 
-            validation_result = schema_validator(schema, data)
+            validation = schema_validator(schema, data)
 
-            self.assert_valid(validation_result)
+            self.assert_valid(validation)
 
     def test_validating_deeply_nested_optional_schema(self):
         schema = {
@@ -530,9 +530,9 @@ class SchemaValidatorTests(unittest.TestCase):
                 'a': None
             }
 
-            validation_result = schema_validator(schema, data)
+            validation = schema_validator(schema, data)
 
-            self.assert_valid(validation_result)
+            self.assert_valid(validation)
 
         with self.subTest('Value of key `a.b` can be None'):
             data = {
@@ -541,9 +541,9 @@ class SchemaValidatorTests(unittest.TestCase):
                 }
             }
 
-            validation_result = schema_validator(schema, data)
+            validation = schema_validator(schema, data)
 
-            self.assert_valid(validation_result)
+            self.assert_valid(validation)
 
         with self.subTest('Value of key `a.b` can be invalid'):
             data = {
@@ -552,11 +552,11 @@ class SchemaValidatorTests(unittest.TestCase):
                 }
             }
 
-            validation_result = schema_validator(schema, data)
+            validation = schema_validator(schema, data)
 
-            self.assertEqual(False, bool(validation_result))
-            self.assertEqual(['a.b.c'], validation_result.missing_keys)
-            self.assertEqual([], validation_result.additional_keys)
+            self.assertEqual(False, bool(validation))
+            self.assertEqual(['a.b.c'], validation.missing_keys)
+            self.assertEqual([], validation.additional_keys)
             self.assertEqual(
                 [
                     {
@@ -565,7 +565,7 @@ class SchemaValidatorTests(unittest.TestCase):
                         'actual': int
                     }
                 ],
-                validation_result.type_errors
+                validation.type_errors
             )
 
         with self.subTest('Value of key `a.b.c` can be valid'):
@@ -577,9 +577,9 @@ class SchemaValidatorTests(unittest.TestCase):
                 }
             }
 
-            validation_result = schema_validator(schema, data)
+            validation = schema_validator(schema, data)
 
-            self.assert_valid(validation_result)
+            self.assert_valid(validation)
 
         with self.subTest('Value of key `a.b.c` can be invalid'):
             data = {
@@ -590,14 +590,14 @@ class SchemaValidatorTests(unittest.TestCase):
                 }
             }
 
-            validation_result = schema_validator(schema, data)
+            validation = schema_validator(schema, data)
 
-            self.assertEqual(False, bool(validation_result))
-            self.assertEqual([], validation_result.missing_keys)
-            self.assertEqual([], validation_result.additional_keys)
+            self.assertEqual(False, bool(validation))
+            self.assertEqual([], validation.missing_keys)
+            self.assertEqual([], validation.additional_keys)
             self.assertEqual(
                 [{'path': 'a.b.c', 'expected': int, 'actual': str}],
-                validation_result.type_errors
+                validation.type_errors
             )
 
 
