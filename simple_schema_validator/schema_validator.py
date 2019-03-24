@@ -5,7 +5,7 @@ from typing import List, Dict, Any, Optional
 from operator import itemgetter
 
 from .schema_types import type_check
-from .utils import replace_optional_schema_paths, get_paths
+from .utils import replace_optional_schema_paths, get_paths, get_paths_with_any
 
 
 MissingKeys = List[str]
@@ -54,6 +54,19 @@ def remove_optional_values(data_paths_mapping, optional_paths, schema_paths):
     return schema_paths - paths_to_remove
 
 
+def remove_paths_inside_paths_of_any(data_paths, schema_paths_mapping):
+    paths_with_any = get_paths_with_any(schema_paths_mapping)
+
+    paths_to_remove = set()
+
+    for path in data_paths:
+        for path_with_any in paths_with_any:
+            if path.startswith(path_with_any) and path != path_with_any:
+                paths_to_remove.add(path)
+
+    return data_paths - paths_to_remove
+
+
 def schema_validator(schema: Schema, data: Data) -> SchemaValidationResult:
     schema = deepcopy(schema)
 
@@ -66,12 +79,12 @@ def schema_validator(schema: Schema, data: Data) -> SchemaValidationResult:
     optional_paths = set(optional_paths)
 
     schema_paths = remove_optional_values(data_paths_mapping, optional_paths, schema_paths)
+    data_paths = remove_paths_inside_paths_of_any(data_paths, schema_paths_mapping)
 
     missing_keys = schema_paths - data_paths
     additional_keys = data_paths - schema_paths
 
     existing_paths_in_schema = data_paths - additional_keys
-
     type_errors = []
 
     for path in existing_paths_in_schema:

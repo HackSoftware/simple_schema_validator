@@ -6,11 +6,20 @@ from simple_schema_validator import schema_validator, types
 
 
 class SchemaValidatorTests(unittest.TestCase):
+    def get_invalid_message(self, validation):
+        parts = [
+            f'Keys in data, but not in schema: {validation.additional_keys}',
+            f'Keys in schema, but not in data: {validation.missing_keys}',
+            f'Keys with different type from schema {validation.type_errors}'
+        ]
+
+        return '\n'.join(parts)
+
     def assert_valid(self, validation):
-        self.assertEqual(True, bool(validation))
-        self.assertEqual([], validation.missing_keys)
-        self.assertEqual([], validation.additional_keys)
-        self.assertEqual([], validation.type_errors)
+        self.assertEqual(True, bool(validation), self.get_invalid_message(validation))
+        self.assertEqual([], validation.missing_keys, self.get_invalid_message(validation))
+        self.assertEqual([], validation.additional_keys, self.get_invalid_message(validation))
+        self.assertEqual([], validation.type_errors, self.get_invalid_message(validation))
 
     def test_empty_data_and_schema_are_considered_valid(self):
         schema = {}
@@ -19,6 +28,86 @@ class SchemaValidatorTests(unittest.TestCase):
         validation = schema_validator(schema, data)
 
         self.assert_valid(validation)
+
+    def test_validating_any_values(self):
+        schema = {
+            'foo': Any
+        }
+
+        with self.subTest('int is a valid Any value'):
+            data = {
+                'foo': 1
+            }
+
+            validation = schema_validator(schema, data)
+
+            self.assert_valid(validation)
+
+        with self.subTest('float is a valid Any value'):
+            data = {
+                'foo': 1.0
+            }
+
+            validation = schema_validator(schema, data)
+
+            self.assert_valid(validation)
+
+        with self.subTest('str is a valid Any value'):
+            data = {
+                'foo': 'bar'
+            }
+
+            validation = schema_validator(schema, data)
+
+            self.assert_valid(validation)
+
+        with self.subTest('bool is a valid Any value'):
+            data = {
+                'foo': True
+            }
+
+            validation = schema_validator(schema, data)
+
+            self.assert_valid(validation)
+
+        with self.subTest('None is a valid Any value'):
+            data = {
+                'foo': None
+            }
+
+            validation = schema_validator(schema, data)
+
+            self.assert_valid(validation)
+
+        with self.subTest('dict is a valid Any value'):
+            data = {
+                'foo': {
+                    'bar': 1
+                }
+            }
+
+            validation = schema_validator(schema, data)
+
+            self.assert_valid(validation)
+
+        with self.subTest('list is a valid Any value'):
+            data = {
+                'foo': [1, 2, 3]
+            }
+
+            validation = schema_validator(schema, data)
+
+            self.assert_valid(validation)
+
+        with self.subTest('Missing key is an invalid Any value'):
+            data = {}
+
+            validation = schema_validator(schema, data)
+
+            self.assertFalse(bool(validation))
+            self.assertEqual(['foo'], validation.missing_keys)
+            self.assertEqual([], validation.additional_keys)
+            self.assertEqual([], validation.type_errors)
 
     def test_validating_plain_schema(self):
         schema = {
@@ -510,6 +599,31 @@ class SchemaValidatorTests(unittest.TestCase):
                         'c': 1
                     }
                 }
+            }
+
+            validation = schema_validator(schema, data)
+
+            self.assert_valid(validation)
+
+    def test_validating_with_optional_any(self):
+        schema = {
+            'foo': types.Optional[Any]
+        }
+
+        with self.subTest('Optional[Any] does not check nested schema'):
+            data = {
+                'foo': {
+                    'bar': 1
+                }
+            }
+
+            validation = schema_validator(schema, data)
+
+            self.assert_valid(validation)
+
+        with self.subTest('Optional[Any] is valid for None'):
+            data = {
+                'foo': None
             }
 
             validation = schema_validator(schema, data)

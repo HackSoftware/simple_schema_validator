@@ -2,7 +2,7 @@ from typing import Any
 
 from collections import deque
 
-from .schema_types import is_optional_schema, get_optional_type
+from .schema_types import is_optional_schema, get_optional_type, is_any_or_optional_any
 
 
 def get_paths(d):
@@ -63,3 +63,7 @@ def replace_optional_schema_paths(schema):
                 stack.append((key, new_value, [p for p in path] + [key]))
 
     return get_paths(schema), optional_paths
+
+
+def get_paths_with_any(schema_paths_mapping):
+    return set(path for path, _type in schema_paths_mapping.items() if is_any_or_optional_any(_type))

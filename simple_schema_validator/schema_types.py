@@ -32,6 +32,14 @@ def is_optional_schema(v: Any) -> bool:
     return is_optional(v) and isinstance(get_optional_type(v), Mapping)
 
 
+def is_any(v: Any) -> bool:
+    return v is Any
+
+
+def is_any_or_optional_any(v: Any) -> bool:
+    return is_any(v) or (is_optional(v) and is_any(get_optional_type(v)))
+
+
 class types:
     Optional = OptionalTypeFactory()
 
@@ -48,9 +56,9 @@ def type_check(schema_paths_mapping, data_paths_mapping, path, optional_paths):
         return True, None
 
     """
-    If type is Any, any we consider this a valid type.
+    If type is any, any we consider this a valid type.
     """
-    if _type is Any:
+    if is_any(_type):
         return True, None
 
     """
