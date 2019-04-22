@@ -59,7 +59,7 @@ schema = {
 
 validation = schema_validator(schema, data)
 
-if not result:
+if not validation:
     print(f'Keys in data, but not in schema: {validation.additional_keys}')
     print(f'Keys in schema, but not in data: {validation.missing_keys}')
     print(f'Keys with different type from schema {validation.type_errors}')
