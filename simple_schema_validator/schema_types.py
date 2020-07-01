@@ -44,11 +44,11 @@ def is_list(v: Any) -> bool:
     return type(v) is list
 
 
-def get_list_type(v: Any) -> type:
+def get_list_type(v: Any) -> Any:
     if len(v) > 0:
         return v[0]
 
-    return type(v)
+    return Any
 
 
 def get_expected_type(v: Any) -> type:
