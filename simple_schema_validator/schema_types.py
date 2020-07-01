@@ -48,7 +48,7 @@ def get_list_type(v: Any) -> type:
     if len(v) > 0:
         return v[0]
 
-    return v
+    return type(v)
 
 
 def get_expected_type(v: Any) -> type:

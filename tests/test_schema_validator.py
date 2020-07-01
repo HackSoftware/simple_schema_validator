@@ -16,9 +16,13 @@ class SchemaValidatorTests(unittest.TestCase):
         return '\n'.join(parts)
 
     def assert_valid(self, validation):
+        # fail
         self.assertEqual(True, bool(validation), self.get_invalid_message(validation))
+
         self.assertEqual([], validation.missing_keys, self.get_invalid_message(validation))
         self.assertEqual([], validation.additional_keys, self.get_invalid_message(validation))
+
+        # fail
         self.assertEqual([], validation.type_errors, self.get_invalid_message(validation))
 
     def test_empty_data_and_schema_are_considered_valid(self):
