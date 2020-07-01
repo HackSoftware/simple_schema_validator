@@ -44,6 +44,10 @@ def is_list(v: Any) -> bool:
     return type(v) is list
 
 
+def is_dict(v: Any) -> bool:
+    return type(v) is dict
+
+
 def get_list_type(v: Any) -> Any:
     if len(v) > 0:
         return v[0]
@@ -73,6 +77,21 @@ def type_check_lists(_type, value, path):
     for index, item in enumerate(value):
         if is_any(list_type):
             continue
+
+        if is_dict(list_type):
+            expected_dict_value_type = type(item.get(list(item.keys())[0]))
+
+            key = list(list_type.keys())[0]
+            actual_dict_value_type = list_type.get(key)
+
+            list_type = dict
+
+            if actual_dict_value_type is not expected_dict_value_type:
+                errors.append({
+                    'path': f'{path}[{index}][{key}]',
+                    'expected': expected_dict_value_type,
+                    'actual': actual_dict_value_type
+                })
 
         if type(item) is not list_type:
             errors.append({

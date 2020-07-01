@@ -788,6 +788,64 @@ class SchemaValidatorTests(unittest.TestCase):
                 validation.type_errors
             )
 
+    def test_validate_list_of_dict_with_int_for_value(self):
+        schema = {
+            'foo': [{'bar': int}]
+        }
+
+        with self.subTest('List of dict is valid'):
+            data = {
+                'foo': [{'bar': 1}]
+            }
+
+            validation = schema_validator(schema, data)
+
+            self.assert_valid(validation)
+
+        with self.subTest('List of dict is not valid'):
+            data = {
+                'foo': [{'bar': 'foobar'}]
+            }
+
+            validation = schema_validator(schema, data)
+
+            self.assertEqual(False, bool(validation))
+            self.assertEqual([], validation.missing_keys)
+            self.assertEqual([], validation.additional_keys)
+            self.assertEqual(
+                [{'path': 'foo[0][bar]', 'expected': str, 'actual': int}],
+                validation.type_errors
+            )
+
+    def test_validate_list_of_dict_with_str_for_value(self):
+        schema = {
+            'foo': [{'bar': str}]
+        }
+
+        with self.subTest('List of dict is valid'):
+            data = {
+                'foo': [{'bar': 'foobar'}]
+            }
+
+            validation = schema_validator(schema, data)
+
+            self.assert_valid(validation)
+
+        with self.subTest('List of dict is not valid'):
+            data = {
+                'foo': [{'bar': 1}]
+            }
+
+            validation = schema_validator(schema, data)
+
+            self.assertEqual(False, bool(validation))
+            self.assertEqual([], validation.missing_keys)
+            self.assertEqual([], validation.additional_keys)
+            self.assertEqual(
+                [{'path': 'foo[0][bar]', 'expected': int, 'actual': str}],
+                validation.type_errors
+            )
+
 
 if __name__ == '__main__':
     unittest.main()
