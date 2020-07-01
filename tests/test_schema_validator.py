@@ -714,6 +714,80 @@ class SchemaValidatorTests(unittest.TestCase):
                 validation.type_errors
             )
 
+    def test_validate_general_list_types(self):
+        schema = {
+            'foo': []
+        }
+
+        with self.subTest('List is valid for list type'):
+            data = {
+                'foo': [1, 2, 3]
+            }
+
+            validation = schema_validator(schema, data)
+
+            self.assert_valid(validation)
+
+        with self.subTest('int is invalid for list type'):
+            data = {
+                'foo': 1
+            }
+
+            validation = schema_validator(schema, data)
+
+            self.assertEqual(False, bool(validation))
+            self.assertEqual([], validation.missing_keys)
+            self.assertEqual([], validation.additional_keys)
+            self.assertEqual(
+                [{'path': 'foo', 'expected': list, 'actual': int}],
+                validation.type_errors
+            )
+
+    def test_validating_specific_list_types(self):
+        schema = {
+            'foo': [int]
+        }
+
+        with self.subTest('List of ints is valid'):
+            data = {
+                'foo': [1, 2, 3]
+            }
+
+            validation = schema_validator(schema, data)
+
+            self.assert_valid(validation)
+
+        with self.subTest('List of strs are invalid'):
+            data = {
+                'foo': ['a', 'b', 'c']
+            }
+
+            validation = schema_validator(schema, data)
+
+            self.assertEqual(False, bool(validation))
+            self.assertEqual([], validation.missing_keys)
+            self.assertEqual([], validation.additional_keys)
+            self.assertEqual(
+                [
+                    {
+                        'path': 'foo[0]',
+                        'expected': int,
+                        'actual': str
+                    },
+                    {
+                        'path': 'foo[1]',
+                        'expected': int,
+                        'actual': str
+                    },
+                    {
+                        'path': 'foo[2]',
+                        'expected': int,
+                        'actual': str
+                    },
+                ],
+                validation.type_errors
+            )
+
 
 if __name__ == '__main__':
     unittest.main()
