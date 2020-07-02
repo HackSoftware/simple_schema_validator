@@ -79,19 +79,14 @@ def type_check_lists(_type, value, path):
             continue
 
         if is_dict(list_type):
-            expected_dict_value_type = type(item.get(list(item.keys())[0]))
+            from .schema_validator import schema_validator
+            validate = schema_validator(list_type, item)
 
-            key = list(list_type.keys())[0]
-            actual_dict_value_type = list_type.get(key)
+            if not bool(validate):
+                for error in validate.type_errors:
+                    errors.append(error)
 
-            list_type = dict
-
-            if actual_dict_value_type is not expected_dict_value_type:
-                errors.append({
-                    'path': f'{path}[{index}][{key}]',
-                    'expected': expected_dict_value_type,
-                    'actual': actual_dict_value_type
-                })
+            continue
 
         if type(item) is not list_type:
             errors.append({

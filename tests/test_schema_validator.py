@@ -813,7 +813,7 @@ class SchemaValidatorTests(unittest.TestCase):
             self.assertEqual([], validation.missing_keys)
             self.assertEqual([], validation.additional_keys)
             self.assertEqual(
-                [{'path': 'foo[0][bar]', 'expected': str, 'actual': int}],
+                [{'path': 'bar', 'expected': int, 'actual': str}],
                 validation.type_errors
             )
 
@@ -842,7 +842,36 @@ class SchemaValidatorTests(unittest.TestCase):
             self.assertEqual([], validation.missing_keys)
             self.assertEqual([], validation.additional_keys)
             self.assertEqual(
-                [{'path': 'foo[0][bar]', 'expected': int, 'actual': str}],
+                [{'path': 'bar', 'expected': str, 'actual': int}],
+                validation.type_errors
+            )
+
+    def test_validating_recursive_list_of_dict(self):
+        schema = {
+            'foo': [{'bar': [int]}]
+        }
+
+        with self.subTest('Recursive list of dict is valid'):
+            data = {
+                'foo': [{'bar': [1]}]
+            }
+
+            validation = schema_validator(schema, data)
+
+            self.assert_valid(validation)
+
+        with self.subTest('Recursive list of dict is not valid'):
+            data = {
+                'foo': [{'bar': ['foobar']}]
+            }
+
+            validation = schema_validator(schema, data)
+
+            self.assertEqual(False, bool(validation))
+            self.assertEqual([], validation.missing_keys)
+            self.assertEqual([], validation.additional_keys)
+            self.assertEqual(
+                [{'path': 'bar[0]', 'expected': int, 'actual': str}],
                 validation.type_errors
             )
 
