@@ -860,6 +860,15 @@ class SchemaValidatorTests(unittest.TestCase):
 
             self.assert_valid(validation)
 
+        with self.subTest('Recursive list of dict with multiple values is valid'):
+            data = {
+                'foo': [{'bar': [1, 2, 3]}]
+            }
+
+            validation = schema_validator(schema, data)
+
+            self.assert_valid(validation)
+
         with self.subTest('Recursive list of dict is not valid'):
             data = {
                 'foo': [{'bar': ['foobar']}]
@@ -874,6 +883,123 @@ class SchemaValidatorTests(unittest.TestCase):
                 [{'path': 'bar[0]', 'expected': int, 'actual': str}],
                 validation.type_errors
             )
+
+        with self.subTest('Recursive list of dict multiple values partially not valid'):
+            data = {
+                'foo': [{'bar': [1, 'foobar']}]
+            }
+
+            validation = schema_validator(schema, data)
+
+            self.assertEqual(False, bool(validation))
+            self.assertEqual([], validation.missing_keys)
+            self.assertEqual([], validation.additional_keys)
+            self.assertEqual(
+                [{'path': 'bar[1]', 'expected': int, 'actual': str}],
+                validation.type_errors
+            )
+
+        with self.subTest('Recursive list of dict multiple values all not valid'):
+            data = {
+                'foo': [{'bar': ['foobar', 'foobar']}]
+            }
+
+            validation = schema_validator(schema, data)
+
+            self.assertEqual(False, bool(validation))
+            self.assertEqual([], validation.missing_keys)
+            self.assertEqual([], validation.additional_keys)
+            self.assertEqual(
+                [
+                    {'path': 'bar[0]', 'expected': int, 'actual': str},
+                    {'path': 'bar[1]', 'expected': int, 'actual': str}
+                ],
+                validation.type_errors
+            )
+
+    def test_validating_recursive_list_of_dict_with_empty_inner_list(self):
+        schema = {
+            'foo': [{'bar': []}]
+        }
+
+        with self.subTest('valid'):
+            data = {
+                'foo': [{'bar': []}]
+            }
+
+            validation = schema_validator(schema, data)
+
+            self.assert_valid(validation)
+
+    def test_validating_recursive_list_of_dict_with_optional_int(self):
+        schema = {
+            'foo': [{'bar': types.Optional[int]}]
+        }
+
+        with self.subTest('Recursive list of dict is valid'):
+            data = {
+                'foo': [{'bar': None}]
+            }
+
+            validation = schema_validator(schema, data)
+
+            self.assert_valid(validation)
+
+        with self.subTest('Recursive list of dict is valid'):
+            data = {
+                'foo': [{'bar': 1}]
+            }
+
+            validation = schema_validator(schema, data)
+
+            self.assert_valid(validation)
+
+        with self.subTest('Recursive list of dict is valid'):
+            data = {
+                'foo': [{'bar': {'foobar': 1, 'barfoo': 2}}]
+            }
+
+            validation = schema_validator(schema, data)
+
+            self.assert_valid(validation)
+
+        with self.subTest('Recursive list of dict is valid'):
+            data = {
+                'foo': [{'bar': 'foobar'}]
+            }
+
+            validation = schema_validator(schema, data)
+
+            self.assertEqual(False, bool(validation))
+            self.assertEqual([], validation.missing_keys)
+            self.assertEqual([], validation.additional_keys)
+            self.assertEqual(
+                [{'path': 'bar', 'expected': int, 'actual': str}],
+                validation.type_errors
+            )
+
+    def test_validating_recursive_list_of_dict_with_any_optional(self):
+        schema = {
+            'foo': [{'bar': types.Optional[Any]}]
+        }
+
+        with self.subTest('Recursive list of dict is valid'):
+            data = {
+                'foo': [{'bar': None}]
+            }
+
+            validation = schema_validator(schema, data)
+
+            self.assert_valid(validation)
+
+        with self.subTest('Recursive list of dict is valid'):
+            data = {
+                'foo': [{'bar': {'foobar': 1, 'barfoo': 'foo_bar'}}]
+            }
+
+            validation = schema_validator(schema, data)
+
+            self.assert_valid(validation)
 
 
 if __name__ == '__main__':
