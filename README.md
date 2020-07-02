@@ -208,6 +208,96 @@ assert bool(schema_validator(schema, data_3)) is True
 assert bool(schema_validator(schema, data_4)) is False
 ```
 
+### Recursive schemas
+
+The schema validator support type checking for schemas in list.
+
+You can do the following:
+
+```python
+from simple_schema_validator import schema_validator, types
+
+schema = {
+  'a': [{'b': int}]
+}
+
+data_1 = {
+  'a': [{'b': 1}]
+}
+
+data_2 = {
+  'a': [{'b': 'some_string'}]
+}
+
+assert bool(schema_validator(schema, data_1)) is True
+assert bool(schema_validator(schema, data_2)) is False
+```
+
+```python
+from simple_schema_validator import schema_validator, types
+
+schema = {
+  'a': [{'b': [int]}]
+}
+
+data_1 = {
+  'a': [{'b': [1]}]
+}
+
+data_2 = {
+  'a': [{'b': [1, 2, 3]}]
+}
+
+data_3 = {
+  'a': [{'b': ['some_string']}]
+}
+
+data_4 = {
+  'a': [{'b': [1, 'some_string']}]
+}
+
+data_5 = {
+  'a': [{'b': ['some_string', 'other_string']}]
+}
+
+data_6 = {
+  'a': [{'b': ['some_string', 1]}]
+}
+
+assert bool(schema_validator(schema, data_1)) is True
+assert bool(schema_validator(schema, data_2)) is True
+assert bool(schema_validator(schema, data_3)) is False
+assert bool(schema_validator(schema, data_4)) is False
+assert bool(schema_validator(schema, data_5)) is False
+assert bool(schema_validator(schema, data_6)) is False
+```
+
+You can do the same with optional branches aswell:
+
+```python
+from simple_schema_validator import schema_validator, types
+
+schema = {
+  'a': [{'b': types.Optional[int]}]
+}
+
+data_1 = {
+  'a': [{
+    'b': {
+      'c': 1,
+      'd': 2
+    }
+  }]
+}
+
+data_2 = {
+  'a': [{'b': 'some_string'}]
+}
+
+assert bool(schema_validator(schema, data_1)) is True
+assert bool(schema_validator(schema, data_2)) is False
+```
+
 ## Examples
 
-For examples, check the [examples](examples/) folder or the tests for the project.
+For examples, check the [examples](examples/) folder or the [tests](tests/) for the project.
