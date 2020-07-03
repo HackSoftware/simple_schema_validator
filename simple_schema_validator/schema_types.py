@@ -1,6 +1,6 @@
 from typing import Any
 
-from collections import Mapping
+from collections.abc import Mapping
 
 
 class OptionalType:
@@ -67,9 +67,6 @@ class types:
 
 
 def type_check_lists(_type, value, path):
-    if not is_list(_type):
-        return None
-
     errors = []
 
     list_type = get_list_type(_type)
