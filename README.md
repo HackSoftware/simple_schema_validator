@@ -1,5 +1,7 @@
 # Simple schema validator
 
+![coverage](https://img.shields.io/badge/coverage-99%25-brightgreen)
+
 - [Simple schema validator](#simple-schema-validator)
     - [Basic usage](#basic-usage)
     - [Type checking](#type-checking)
