@@ -44,6 +44,10 @@ def is_list(v: Any) -> bool:
     return type(v) is list
 
 
+def is_dict(v: Any) -> bool:
+    return type(v) is dict
+
+
 def get_list_type(v: Any) -> Any:
     if len(v) > 0:
         return v[0]
@@ -72,6 +76,16 @@ def type_check_lists(_type, value, path):
 
     for index, item in enumerate(value):
         if is_any(list_type):
+            continue
+
+        if is_dict(list_type):
+            from .schema_validator import schema_validator
+            validate = schema_validator(list_type, item)
+
+            if not bool(validate):
+                for error in validate.type_errors:
+                    errors.append(error)
+
             continue
 
         if type(item) is not list_type:
