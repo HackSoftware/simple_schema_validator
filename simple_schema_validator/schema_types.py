@@ -107,6 +107,16 @@ def type_check(schema_paths_mapping, data_paths_mapping, path, optional_paths):
     Consider this a valid type.
     """
     if isinstance(value, Mapping):
+        if type(_type) is not type(value):
+            if not is_optional(_type) and not is_any_or_optional_any(_type):
+                return False, [{'path': path, 'expected': type(_type), 'actual': type(value)}]
+
+            if is_optional(_type):
+                optional_type = get_optional_type(_type)
+
+                if type(optional_type) is not type and not is_any_or_optional_any(optional_type):
+                    return False, [{'path': path, 'expected': type(optional_type), 'actual': type(value)}]
+
         return True, None
 
     """
