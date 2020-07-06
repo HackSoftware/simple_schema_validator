@@ -1212,6 +1212,28 @@ class SchemaValidatorTests(unittest.TestCase):
                 validation.type_errors
             )
 
+    def test_types_list(self):
+        schema = {"foo": types.List[int]}
+
+        with self.subTest("valid"):
+            data = {"foo": [1]}
+
+            validation = schema_validator(schema, data)
+
+            self.assert_valid(validation)
+
+        with self.subTest("invalid str is not int"):
+            data = {"foo": ['bar']}
+
+            validation = schema_validator(schema, data)
+
+            self.assertEqual(False, bool(validation))
+            self.assertEqual([], validation.missing_keys)
+            self.assertEqual([], validation.additional_keys)
+            self.assertEqual(
+                [{'path': 'foo[0]', 'expected': int, 'actual': str}],
+                validation.type_errors
+            )
 
 if __name__ == '__main__':
     unittest.main()
