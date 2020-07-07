@@ -1001,6 +1001,239 @@ class SchemaValidatorTests(unittest.TestCase):
 
             self.assert_valid(validation)
 
+    def test_more_list_cases(self):
+        schema = {"foo": []}
+
+        with self.subTest("valid"):
+            data = {"foo": []}
+
+            validation = schema_validator(schema, data)
+
+            self.assert_valid(validation)
+
+        with self.subTest("invalid dict is not a list"):
+            data = {"foo": {}}
+
+            validation = schema_validator(schema, data)
+
+            self.assertEqual(False, bool(validation))
+            self.assertEqual([], validation.missing_keys)
+            self.assertEqual([], validation.additional_keys)
+            self.assertEqual(
+                [{'path': 'foo', 'expected': list, 'actual': dict}],
+                validation.type_errors
+            )
+
+        with self.subTest("invalid dict is not a list"):
+            data = {"foo": {'bar': 1}}
+
+            validation = schema_validator(schema, data)
+
+            self.assertEqual(False, bool(validation))
+            self.assertEqual([], validation.missing_keys)
+            self.assertEqual(['foo.bar'], validation.additional_keys)
+            self.assertEqual(
+                [{'path': 'foo', 'expected': list, 'actual': dict}],
+                validation.type_errors
+            )
+
+        with self.subTest("invalid tuple is not a list"):
+            data = {"foo": ()}
+
+            validation = schema_validator(schema, data)
+
+            self.assertEqual(False, bool(validation))
+            self.assertEqual([], validation.missing_keys)
+            self.assertEqual([], validation.additional_keys)
+            self.assertEqual(
+                [{'path': 'foo', 'expected': list, 'actual': tuple}],
+                validation.type_errors
+            )
+
+        with self.subTest("invalid int is not a list"):
+            data = {"foo": 1}
+
+            validation = schema_validator(schema, data)
+
+            self.assertEqual(False, bool(validation))
+            self.assertEqual([], validation.missing_keys)
+            self.assertEqual([], validation.additional_keys)
+            self.assertEqual(
+                [{'path': 'foo', 'expected': list, 'actual': int}],
+                validation.type_errors
+            )
+
+        with self.subTest("invalid str is not a list"):
+            data = {"foo": 'bar'}
+
+            validation = schema_validator(schema, data)
+
+            self.assertEqual(False, bool(validation))
+            self.assertEqual([], validation.missing_keys)
+            self.assertEqual([], validation.additional_keys)
+            self.assertEqual(
+                [{'path': 'foo', 'expected': list, 'actual': str}],
+                validation.type_errors
+            )
+
+    def test_optional_list(self):
+        schema = {"foo": types.Optional[[]]}
+
+        with self.subTest("valid"):
+            data = {"foo": None}
+
+            validation = schema_validator(schema, data)
+
+            self.assert_valid(validation)
+
+        with self.subTest("valid"):
+            data = {"foo": []}
+
+            validation = schema_validator(schema, data)
+
+            self.assert_valid(validation)
+
+        with self.subTest("valid"):
+            data = {"foo": [1, 2, 3]}
+
+            validation = schema_validator(schema, data)
+
+            self.assert_valid(validation)
+
+        with self.subTest("valid"):
+            data = {"foo": ['foo', 'bar']}
+
+            validation = schema_validator(schema, data)
+
+            self.assert_valid(validation)
+
+        with self.subTest("invalid dict is not a list"):
+            data = {"foo": {}}
+
+            validation = schema_validator(schema, data)
+
+            self.assertEqual(False, bool(validation))
+            self.assertEqual([], validation.missing_keys)
+            self.assertEqual([], validation.additional_keys)
+            self.assertEqual(
+                [{'path': 'foo', 'expected': list, 'actual': dict}],
+                validation.type_errors
+            )
+
+        with self.subTest("invalid tuple is not a list"):
+            data = {"foo": ()}
+
+            validation = schema_validator(schema, data)
+
+            self.assertEqual(False, bool(validation))
+            self.assertEqual([], validation.missing_keys)
+            self.assertEqual([], validation.additional_keys)
+            self.assertEqual(
+                [{'path': 'foo', 'expected': list, 'actual': tuple}],
+                validation.type_errors
+            )
+
+        with self.subTest("invalid str is not a list"):
+            data = {"foo": 'bar'}
+
+            validation = schema_validator(schema, data)
+
+            self.assertEqual(False, bool(validation))
+            self.assertEqual([], validation.missing_keys)
+            self.assertEqual([], validation.additional_keys)
+            self.assertEqual(
+                [{'path': 'foo', 'expected': list, 'actual': str}],
+                validation.type_errors
+            )
+
+        with self.subTest("invalid tuple is not a list"):
+            data = {"foo": 1}
+
+            validation = schema_validator(schema, data)
+
+            self.assertEqual(False, bool(validation))
+            self.assertEqual([], validation.missing_keys)
+            self.assertEqual([], validation.additional_keys)
+            self.assertEqual(
+                [{'path': 'foo', 'expected': list, 'actual': int}],
+                validation.type_errors
+            )
+
+    def test_optional_int_list(self):
+        schema = {"foo": types.Optional[[int]]}
+
+        with self.subTest("valid"):
+            data = {"foo": None}
+
+            validation = schema_validator(schema, data)
+
+            self.assert_valid(validation)
+
+        with self.subTest("valid"):
+            data = {"foo": []}
+
+            validation = schema_validator(schema, data)
+
+            self.assert_valid(validation)
+
+        with self.subTest("valid"):
+            data = {"foo": [1, 2, 3]}
+
+            validation = schema_validator(schema, data)
+
+            self.assert_valid(validation)
+
+        with self.subTest("valid"):
+            data = {"foo": ['foo', 'bar']}
+
+            validation = schema_validator(schema, data)
+
+            self.assertEqual(False, bool(validation))
+            self.assertEqual([], validation.missing_keys)
+            self.assertEqual([], validation.additional_keys)
+            self.assertEqual(
+                [
+                    {'path': 'foo[0]', 'expected': int, 'actual': str},
+                    {'path': 'foo[1]', 'expected': int, 'actual': str}
+                ],
+                validation.type_errors
+            )
+
+        with self.subTest("valid"):
+            data = {"foo": [1, 'bar']}
+
+            validation = schema_validator(schema, data)
+
+            self.assertEqual(False, bool(validation))
+            self.assertEqual([], validation.missing_keys)
+            self.assertEqual([], validation.additional_keys)
+            self.assertEqual(
+                [{'path': 'foo[1]', 'expected': int, 'actual': str}],
+                validation.type_errors
+            )
+
+    def test_types_list(self):
+        schema = {"foo": types.List[int]}
+
+        with self.subTest("valid"):
+            data = {"foo": [1]}
+
+            validation = schema_validator(schema, data)
+
+            self.assert_valid(validation)
+
+        with self.subTest("invalid str is not int"):
+            data = {"foo": ['bar']}
+
+            validation = schema_validator(schema, data)
+
+            self.assertEqual(False, bool(validation))
+            self.assertEqual([], validation.missing_keys)
+            self.assertEqual([], validation.additional_keys)
+            self.assertEqual(
+                [{'path': 'foo[0]', 'expected': int, 'actual': str}],
+                validation.type_errors
+            )
 
 if __name__ == '__main__':
     unittest.main()

@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, List
 
 from collections.abc import Mapping
 
@@ -13,6 +13,16 @@ class OptionalTypeFactory:
         return OptionalType(T)
 
 
+class ListType:
+    def __init__(self, T: Any):
+        self.T = T
+
+
+class ListTypeFactory:
+    def __getitem__(self, T):
+        return ListType(T)
+
+
 def is_optional(t: Any) -> bool:
     return type(t) is OptionalType
 
@@ -25,6 +35,10 @@ def get_optional_type(t: OptionalType) -> Any:
     https://stackoverflow.com/questions/46198178/unpack-optional-type-annotation-in-python-3-5-2
 
     """
+    return t.T
+
+
+def get_listType_type(t: ListType) -> Any:
     return t.T
 
 
@@ -49,8 +63,11 @@ def is_dict(v: Any) -> bool:
 
 
 def get_list_type(v: Any) -> Any:
-    if len(v) > 0:
-        return v[0]
+    try:
+        if len(v) > 0:
+            return v[0]
+    except TypeError:
+        return get_listType_type(v)
 
     return Any
 
@@ -64,6 +81,7 @@ def get_expected_type(v: Any) -> type:
 
 class types:
     Optional = OptionalTypeFactory()
+    List = ListTypeFactory()
 
 
 def type_check_lists(_type, value, path):
@@ -107,6 +125,16 @@ def type_check(schema_paths_mapping, data_paths_mapping, path, optional_paths):
     Consider this a valid type.
     """
     if isinstance(value, Mapping):
+        if type(_type) is not type(value):
+            if not is_optional(_type) and not is_any_or_optional_any(_type):
+                return False, [{'path': path, 'expected': type(_type), 'actual': type(value)}]
+
+            if is_optional(_type):
+                optional_type = get_optional_type(_type)
+
+                if type(optional_type) is not type and not is_any_or_optional_any(optional_type):
+                    return False, [{'path': path, 'expected': type(optional_type), 'actual': type(value)}]
+
         return True, None
 
     """

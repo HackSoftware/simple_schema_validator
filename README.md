@@ -210,6 +210,62 @@ assert bool(schema_validator(schema, data_3)) is True
 assert bool(schema_validator(schema, data_4)) is False
 ```
 
+You can use it with optional lists aswell:
+
+```python
+from simple_schema_validator import schema_validator, types
+
+schema = {
+  'a': types.Optional[[int]]
+}
+
+data_1 = {
+  'a': None
+}
+
+data_2 = {
+  'a': 1
+}
+
+data_3 = {
+  'a': [1, 2, 3]
+}
+
+data_4 = {
+  'a': ['some_string']
+}
+
+assert bool(schema_validator(schema, data_1)) is True
+assert bool(schema_validator(schema, data_2)) is False
+assert bool(schema_validator(schema, data_3)) is True
+assert bool(schema_validator(schema, data_4)) is False
+```
+
+### List types
+
+The schema validator support list types.
+
+You can do the following:
+
+```python
+from simple_schema_validator import schema_validator, types
+
+schema = {
+  'a': types.List[int]
+}
+
+data_1 = {
+  'a': [1, 2, 3]
+}
+
+data_3 = {
+  'a': ['some_string']
+}
+
+assert bool(schema_validator(schema, data_1)) is True
+assert bool(schema_validator(schema, data_2)) is False
+```
+
 ### Recursive schemas
 
 The schema validator support type checking for schemas in list.
